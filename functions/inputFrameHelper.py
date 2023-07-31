@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from functions.operationHelper import passElements, addUser, getUpdates
-
+from . import constants
 
 root = None
 inputFrame = None
@@ -9,12 +9,7 @@ inputFrame = None
 selectedService = None
 
 # operation options
-options = [
-    "Patreon",
-    "Pixiv Fanbox",
-    "Discord",
-    "Fantia"
-]
+options = constants.WEBSITES
 
 def buildFrame():
     global selectedService, idEntryElement
@@ -38,9 +33,9 @@ def buildFrame():
 
     # row 2
     frameRow = 2
-    loadButton = Button(inputFrame, text = "Add to subscriptions", command = addUser)
-    loadButton.grid( row = frameRow, column=1, pady= 10, sticky= W + E)
-    loadButton.configure(width=10, height=2)
+    addButton = Button(inputFrame, text = "Add to subscriptions", command = addUser)
+    addButton.grid( row = frameRow, column=1, pady= 10, sticky= W + E)
+    addButton.configure(width=10, height=2)
     
 
     addUserResultEle = Label(inputFrame, text="")
@@ -53,11 +48,11 @@ def buildFrame():
     
     # row 4
     frameRow = 4
-    loadButton = Button(inputFrame, text = "Check subscription updates", command= getUpdates)
-    loadButton.grid( row=frameRow, column=0, pady= 10, sticky= W + E)
-    loadButton.configure(width=10, height=2)
+    updateButton = Button(inputFrame, text = "Check subscription updates", command= getUpdates)
+    updateButton.grid( row=frameRow, column=0, pady= 10, sticky= W + E)
+    updateButton.configure(width=10, height=2)
 
-    return idEntryElement, addUserResultEle
+    return idEntryElement, addUserResultEle, addButton
 
 
 def initalizeInputFrame(rootIn):
@@ -66,7 +61,7 @@ def initalizeInputFrame(rootIn):
     
     inputFrame = Frame(root)
     inputFrame.grid_propagate(False)
-    idEntryElement, addUserResultEle = buildFrame()
+    idEntryElement, addUserResultEle, addButton = buildFrame()
 
-    passElements(idEntryElement, selectedService, addUserResultEle)
+    passElements(idEntryElement, selectedService, addUserResultEle, addButton)
     return inputFrame
