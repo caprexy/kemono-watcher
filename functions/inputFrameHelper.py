@@ -17,7 +17,7 @@ listKnownPosts = None
 options = constants.WEBSITES
 
 def buildFrame():
-    global selectedService, idEntryElement, knownPostsListVar, unknownPostsListVar, listUnknownPosts, listKnownPosts
+    global selectedService, knownPostsListVar, unknownPostsListVar, listUnknownPosts, listKnownPosts
 
     # first row
     frameRow = 1
@@ -115,48 +115,51 @@ def initalizeInputFrame(rootIn):
     return inputFrame
 
 def moveKnownToUnknown():
-    global knownPostsListVar, unknownPostsListVar, listKnownPosts
-    knownList = []
-    unknownList = []
+    global listKnownPosts
+    knownList, unknownList = getUnAndKnownLists()
 
-    if(len( knownPostsListVar.get()) != 0):
-        knownList = knownPostsListVar.get()[1:-1].replace('\'','').replace(' ','').split(",")
-        if(knownList[-1] == ''): knownList.pop()
-    if(len( unknownPostsListVar.get()) != 0):
-        unknownList = unknownPostsListVar.get()[1:-1].replace('\'','').replace(' ','').split(",")
-        if(unknownList[-1] == ''): unknownList.pop()
+    knownList, unknownList = moveAToB(knownList, unknownList, listKnownPosts.curselection())
 
-    for selectedIndex in listKnownPosts.curselection():
-        unknownList.append(knownList[selectedIndex])
-        knownList.pop(selectedIndex)
-    unknownList.sort()
-    unknownList.reverse()
-
-    knownPostsListVar.set(knownList)
-    unknownPostsListVar.set(unknownList)
-
-    operationHelper.updateDatabase()
+    setUnAndKnownLists(unknownList, knownList)
     
 def moveUnknownToKnown():
-    global knownPostsListVar, unknownPostsListVar, listUnknownPosts
+    global listUnknownPosts
+    knownList, unknownList = getUnAndKnownLists()
+
+    unknownList, knownList = moveAToB(unknownList, knownList, listUnknownPosts.curselection())
+
+    setUnAndKnownLists(unknownList, knownList)
+    
+
+def moveAToB(a, b, aSelection):
+
+    selectedIds = []
+    for selectedIndex in aSelection:
+        selectedIds.append(a[selectedIndex])
+    for id in selectedIds:
+        b.append(id)
+        a.remove(id)
+
+    a.sort()
+    a.reverse()
+
+    b.sort()
+    b.reverse()
+    
+    return a, b
+    
+def getUnAndKnownLists():
+    global knownPostsListVar, unknownPostsListVar
     knownList = []
     unknownList = []
 
-    if(len( knownPostsListVar.get()) != 0):
-        knownList = knownPostsListVar.get()[1:-1].replace('\'','').replace(' ','').split(",")
-        if(knownList[-1] == ''): knownList.pop()
-    if(len( unknownPostsListVar.get()) != 0):
-        unknownList = unknownPostsListVar.get()[1:-1].replace('\'','').replace(' ','').split(",")
-        if(unknownList[-1] == ''): unknownList.pop()
+    knownList = operationHelper.formatStrVarToList(knownPostsListVar)
+    unknownList = operationHelper.formatStrVarToList(unknownPostsListVar)
 
-    for selectedIndex in listUnknownPosts.curselection():
-        knownList.append(unknownList[selectedIndex])
-        unknownList.pop(selectedIndex)
-    knownList.sort()
-    knownList.reverse()
+    return knownList, unknownList
 
-    knownPostsListVar.set(knownList)
-    unknownPostsListVar.set(unknownList)
-    
+def setUnAndKnownLists(unknown, known):
+    knownPostsListVar.set(known)
+    unknownPostsListVar.set(unknown)
+
     operationHelper.updateDatabase()
-    

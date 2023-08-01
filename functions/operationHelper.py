@@ -56,18 +56,19 @@ def updateDatabase():
     knownList = []
     unknownList = []
 
-    if(len( knownPostsListVar.get()) != 0):
-        knownList = knownPostsListVar.get()[1:-1].replace('\'','').replace(' ','').split(",")
-        if(knownList[-1] == ''): knownList.pop()
-    if(len( unknownPostsListVar.get()) != 0):
-        unknownList = unknownPostsListVar.get()[1:-1].replace('\'','').replace(' ','').split(",")
-        if(unknownList[-1] == ''): unknownList.pop()
+    knownList = formatStrVarToList(knownPostsListVar)
+    unknownList = formatStrVarToList(unknownPostsListVar)
 
-    data = {"checkedPostIds":knownList,
-            "uncheckedPostIds":unknownList}
     
-    databaseHelper.updateUserData(user, service, data)
+    databaseHelper.updateUserData(user, service, knownList, unknownList)
     databaseHelper.writeDatabase()
 
 def getUpdates():
     print("a")
+
+def formatStrVarToList(strVar):
+    finList = []
+    if(len( strVar.get()) != 0):
+        finList = strVar.get()[1:-1].replace('\'','').replace(' ','').split(",")
+        if(finList[-1] == ''): finList.pop()
+    return finList

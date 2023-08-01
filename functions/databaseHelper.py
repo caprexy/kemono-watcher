@@ -72,7 +72,11 @@ def writeUser(userId, service):
 def getUserData(userId, service):
     return database[service][userId]
 
-def updateUserData(userId, service, data):
+def updateUserData(userId, service, knownList, unknownList):
+    
+    data = {"checkedPostIds":knownList,
+            "uncheckedPostIds":unknownList}
+    
     database[service][userId] = data
 
 def writeDatabase():
