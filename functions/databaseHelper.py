@@ -57,16 +57,23 @@ def writeUser(userId, service):
         response = json.loads(contents.decode())
         
 
-    addButtonutton["state"] = "normal"
     addUserResultEle.config(text="Finished getting all posts", bg = "orange")
 
 
     # actually write the new user and put it into the database
-    database[service][userId] = {"checkedPostIds":idList}
-
+    database[service][userId] = {"checkedPostIds":idList,
+                                 "uncheckedPostIds":[]
+                                 }
     addUserResultEle.config(text="User is now in database", bg = "green")
     writeDatabase()
 
+    addButtonutton["state"] = "normal"
+
+def getUserData(userId, service):
+    return database[service][userId]
+
+def updateUserData(userId, service, data):
+    database[service][userId] = data
 
 def writeDatabase():
     global database
