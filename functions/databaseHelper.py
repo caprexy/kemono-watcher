@@ -84,3 +84,37 @@ def writeDatabase():
     json_object = json.dumps(database, indent=4)
     with open(databaseFileName, 'w') as outfile:
         outfile.write(json_object)
+
+def getUnknownPosts():
+    unknownPosts = []
+    for service in database:
+        for user in database[service]:
+            for unknownPostId in database[service][user]["uncheckedPostIds"]:
+                unknownPosts.append(user+","+service+","+unknownPostId)
+    
+    return unknownPosts
+
+def getAllUsers():
+    global database
+    users = {}
+    for service in database:
+        serviceUsers = []
+        for user in database[service]:
+            serviceUsers.append(user)
+        users[service] = serviceUsers
+
+    return users
+
+def knowUnknownPost(user, service, post):
+
+    knownList = database[service][user]["checkedPostIds"]
+    knownList.append(post)
+    knownList.sort()
+    knownList.reverse()
+    
+    unknownList = database[service][user]["uncheckedPostIds"]
+    unknownList.remove(post)
+    unknownList.sort()
+    unknownList.reverse()
+
+    writeDatabase()

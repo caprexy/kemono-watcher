@@ -56,17 +56,6 @@ def buildFrame():
     frameRow += 1
     seperator1 = ttk.Separator(inputFrame, orient=HORIZONTAL)
     seperator1.grid(row = frameRow, column=0, columnspan=3, sticky="ew", pady=10)
-    
-    # row 4
-    frameRow += 1
-    updateButton = Button(inputFrame, text = "Check subscription updates", command= operationHelper.getUpdates)
-    updateButton.grid( row= frameRow, column=1, pady= 10, sticky= W + E)
-    updateButton.configure(width=10, height=2)
-
-    ###########
-    frameRow += 1
-    seperator2 = ttk.Separator(inputFrame, orient=HORIZONTAL)
-    seperator2.grid(row = frameRow, column=0, columnspan=3, sticky="ew", pady=10)
 
     ###########
     frameRow += 1
@@ -79,7 +68,7 @@ def buildFrame():
     listKnownPosts.configure(width=10, height=2)
     inputFrame.grid_rowconfigure(frameRow, minsize=200)
 
-    moveKnownToUnknownButton = Button(inputFrame, text = "Move highlighted known post to unknown", command= moveKnownToUnknown)
+    moveKnownToUnknownButton = Button(inputFrame, text = "Move known post to unknown", command= moveKnownToUnknown)
     moveKnownToUnknownButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
     moveKnownToUnknownButton.configure(width=10, height=2)
 
@@ -97,7 +86,7 @@ def buildFrame():
     listUnknownPosts.configure(width=10, height=2)
     inputFrame.grid_rowconfigure(frameRow, minsize=200)
     
-    moveUnknownToKnownButton = Button(inputFrame, text = "Move highlighted unknown post to known", command= moveUnknownToKnown)
+    moveUnknownToKnownButton = Button(inputFrame, text = "Move unknown post to known", command= moveUnknownToKnown)
     moveUnknownToKnownButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
     moveUnknownToKnownButton.configure(width=10, height=2)
 

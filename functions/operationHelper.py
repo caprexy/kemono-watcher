@@ -63,9 +63,6 @@ def updateDatabase():
     databaseHelper.updateUserData(user, service, knownList, unknownList)
     databaseHelper.writeDatabase()
 
-def getUpdates():
-    print("a")
-
 def formatStrVarToList(strVar):
     finList = []
     if(len( strVar.get()) != 0):
