@@ -43,6 +43,10 @@ def viewUserInfo():
     service =  selectedService.get()
 
     data = databaseHelper.getUserData(user, service)
+    if(data == []):
+        addUserResultEle.config(text="User couldnt find user!", bg = "red")
+        return
+    
     knownPostsListVar.set(data["checkedPostIds"])
     unknownPostsListVar.set(data["uncheckedPostIds"])
     

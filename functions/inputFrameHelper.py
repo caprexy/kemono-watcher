@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from . import operationHelper
+from . import databaseHelper
 from . import constants
 
 root = None
@@ -12,12 +13,14 @@ knownPostsListVar = None
 unknownPostsListVar = None
 listUnknownPosts = None
 listKnownPosts = None
+idEntryElement = None
+addUserResultEle = None
 
 # operation options
 options = constants.WEBSITES
 
 def buildFrame():
-    global selectedService, knownPostsListVar, unknownPostsListVar, listUnknownPosts, listKnownPosts
+    global selectedService, knownPostsListVar, unknownPostsListVar, listUnknownPosts, listKnownPosts, idEntryElement, addUserResultEle
 
     # first row
     frameRow = 1
@@ -59,8 +62,8 @@ def buildFrame():
 
     ###########
     frameRow += 1
-    addUserResultEle = Label(inputFrame, text="Known posts")
-    addUserResultEle.grid(row=frameRow, column=0)
+    knownPostsLabel = Label(inputFrame, text="Known posts")
+    knownPostsLabel.grid(row=frameRow, column=0)
 
     knownPostsListVar = StringVar(value=[])
     listKnownPosts = Listbox(inputFrame, selectmode= "extended", listvariable=knownPostsListVar)
@@ -74,13 +77,10 @@ def buildFrame():
 
     ###########
     frameRow += 1
-    addUserResultEle = Label(inputFrame, text="Unknown posts")
-    addUserResultEle.grid(row=frameRow, column=0)
+    unknownPostLabels = Label(inputFrame, text="Unknown posts")
+    unknownPostLabels.grid(row=frameRow, column=0)
 
     unknownPostsListVar = StringVar(value=[])
-    addUserResultEle = Label(inputFrame, text="")
-    addUserResultEle.grid(row=frameRow, column=2)
-
     listUnknownPosts = Listbox(inputFrame, selectmode= "extended", listvariable=unknownPostsListVar)
     listUnknownPosts.grid( row=frameRow, column=1, pady= 10,   sticky= "nsew")
     listUnknownPosts.configure(width=10, height=2)
@@ -90,7 +90,17 @@ def buildFrame():
     moveUnknownToKnownButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
     moveUnknownToKnownButton.configure(width=10, height=2)
 
-    return idEntryElement, addUserResultEle, addButton, 
+
+    frameRow += 1
+    seperator1 = ttk.Separator(inputFrame, orient=HORIZONTAL)
+    seperator1.grid(row = frameRow, column=0, columnspan=3, sticky="ew", pady=10)
+
+    frameRow += 1
+    deleteUserButton = Button(inputFrame, text = "Delete user", command = deleteUser)
+    deleteUserButton.grid( row = frameRow, column=0, pady= 10, sticky= W + E)
+    deleteUserButton.configure(width=10, height=2)
+
+    return idEntryElement, addButton, 
 
 def initalizeInputFrame(rootIn):
     global inputFrame, root, selectedService, knownPostsListVar, unknownPostsListVar
@@ -98,7 +108,7 @@ def initalizeInputFrame(rootIn):
     
     inputFrame = Frame(root)
     inputFrame.grid_propagate(False)
-    idEntryElement, addUserResultEle, addButton = buildFrame()
+    idEntryElement, addButton = buildFrame()
 
     operationHelper.passElements(idEntryElement, selectedService, addUserResultEle, addButton, knownPostsListVar, unknownPostsListVar)
     return inputFrame
@@ -152,3 +162,13 @@ def setUnAndKnownLists(unknown, known):
     unknownPostsListVar.set(unknown)
 
     operationHelper.updateDatabase()
+
+    
+def deleteUser():
+    user = idEntryElement.get()
+    service =  selectedService.get()
+    if(databaseHelper.getUserData(user, service) == []):
+        addUserResultEle.config(bg="orange", text="Couldnt find user to delete")
+    else:
+        databaseHelper.deleteUserData(user, service)
+        addUserResultEle.config(bg="green", text="Deleted user")

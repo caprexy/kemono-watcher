@@ -59,7 +59,9 @@ def writeUser(userId, service):
 
     addUserResultEle.config(text="Finished getting all posts", bg = "orange")
 
-
+    if(len(idList) == 0):
+        addUserResultEle.config(text="Didnt find any posts so didnt save!", bg = "orange")
+        return
     # actually write the new user and put it into the database
     database[service][userId] = {"checkedPostIds":idList,
                                  "uncheckedPostIds":[]
@@ -70,7 +72,10 @@ def writeUser(userId, service):
     addButtonutton["state"] = "normal"
 
 def getUserData(userId, service):
-    return database[service][userId]
+    try:
+        return database[service][userId]
+    except:
+        return []
 
 def updateUserData(userId, service, knownList, unknownList):
     
@@ -78,6 +83,11 @@ def updateUserData(userId, service, knownList, unknownList):
             "uncheckedPostIds":unknownList}
     
     database[service][userId] = data
+
+def deleteUserData(userId, service):
+
+    del database[service][userId]
+    writeDatabase()
 
 def writeDatabase():
     global database
