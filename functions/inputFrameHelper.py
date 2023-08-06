@@ -4,64 +4,101 @@ from . import operationHelper
 from . import databaseHelper
 from . import constants
 
-root = None
+# frames operated in
+parentFrame = None
 inputFrame = None
 
-selectedService = None
+# various widgets in need of saving
+selectedServiceVar = None
 
 knownPostsListVar = None
 unknownPostsListVar = None
+
 listUnknownPosts = None
 listKnownPosts = None
+
 idEntryElement = None
-addUserResultEle = None
+viewAddIdStatusLabel = None
 
 # operation options
 options = constants.WEBSITES
 
-def buildFrame():
-    global selectedService, knownPostsListVar, unknownPostsListVar, listUnknownPosts, listKnownPosts, idEntryElement, addUserResultEle
+def initalizeInputFrame(rootIn):
+    global inputFrame, parentFrame
+    parentFrame = rootIn
+    
+    inputFrame = Frame(rootIn)
+    buildFrame()
 
-    # first row
-    frameRow = 1
+    return inputFrame
+
+def buildFrame():
+    # frame config
     inputFrame.grid_columnconfigure(0, weight=1, uniform="equal")
     inputFrame.grid_columnconfigure(1, weight=1, uniform="equal")
     inputFrame.grid_columnconfigure(2, weight=1, uniform="equal")
+    inputFrame.grid_propagate(False)
 
+    frameRow = 1
+    enterServiceAndIdRow(frameRow)
+
+    frameRow += 1
+    viewAddIdRow(frameRow)
+
+    frameRow += 1
+    seperatorRow(frameRow)
+
+    frameRow += 1
+    knownPostsRow(frameRow)
+
+    frameRow += 1
+    unknownPostsRow(frameRow)
+
+    frameRow += 1
+    seperatorRow(frameRow)
+
+    frameRow += 1
+    deleteUserRow(frameRow)
+
+# functions to define the rows and the corresponding widgets
+def enterServiceAndIdRow(frameRow):
+    global selectedServiceVar,  idEntryElement
     operationLabel = Label(inputFrame, text="Enter service and user id:")
     operationLabel.grid(row=frameRow, column=0)
-    selectedService = StringVar(root)
-    selectedService.set(options[0])
-    serviceSelectEle = OptionMenu( inputFrame , selectedService , *options )
+    selectedServiceVar = StringVar(parentFrame)
+    selectedServiceVar.set(options[0])
+    serviceSelectEle = OptionMenu( inputFrame , selectedServiceVar , *options )
     serviceSelectEle.grid( row=frameRow, column=1, pady= 10, sticky= W + E)
     serviceSelectEle.configure(width=10, height=2)
 
     idEntryElement = Entry(inputFrame)
     idEntryElement.grid(row=frameRow, column=2)
 
+    operationHelper.setServiceAndUserId(selectedServiceVar, idEntryElement)
     idEntryElement.insert(0,"6185029")
 
-    # row 2
-    frameRow += 1
+def viewAddIdRow(frameRow):
+    global viewAddIdStatusLabel
     viewButton = Button(inputFrame, text = "View id info", command = operationHelper.viewUserInfo)
     viewButton.grid( row = frameRow, column=0, pady= 10, sticky= W + E)
     viewButton.configure(width=10, height=2)
 
-    addButton = Button(inputFrame, text = "Add to subscriptions", command = operationHelper.addUser)
+    addButton = Button(inputFrame, text = "Add id to subscriptions", command = operationHelper.addUser)
     addButton.grid( row = frameRow, column=1, pady= 10, sticky= W + E)
     addButton.configure(width=10, height=2)
     
 
-    addUserResultEle = Label(inputFrame, text="")
-    addUserResultEle.grid(row=frameRow, column=2)
+    viewAddIdStatusLabel = Label(inputFrame, text="")
+    viewAddIdStatusLabel.grid(row=frameRow, column=2)
+    operationHelper.setViewAddIdStatusLabel(viewAddIdStatusLabel)
+    operationHelper.setAddButton(addButton)
 
-    # row 3
-    frameRow += 1
+def seperatorRow(frameRow):
     seperator1 = ttk.Separator(inputFrame, orient=HORIZONTAL)
     seperator1.grid(row = frameRow, column=0, columnspan=3, sticky="ew", pady=10)
 
-    ###########
-    frameRow += 1
+def knownPostsRow(frameRow):
+    global  knownPostsListVar, unknownPostsListVar, listUnknownPosts, listKnownPosts
     knownPostsLabel = Label(inputFrame, text="Known posts")
     knownPostsLabel.grid(row=frameRow, column=0)
 
@@ -75,8 +112,10 @@ def buildFrame():
     moveKnownToUnknownButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
     moveKnownToUnknownButton.configure(width=10, height=2)
 
-    ###########
-    frameRow += 1
+    operationHelper.setKnownPostVar(knownPostsListVar)
+
+def unknownPostsRow(frameRow):
+    
     unknownPostLabels = Label(inputFrame, text="Unknown posts")
     unknownPostLabels.grid(row=frameRow, column=0)
 
@@ -90,28 +129,15 @@ def buildFrame():
     moveUnknownToKnownButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
     moveUnknownToKnownButton.configure(width=10, height=2)
 
+    operationHelper.setUnknownPostVar(unknownPostsListVar)
 
-    frameRow += 1
-    seperator1 = ttk.Separator(inputFrame, orient=HORIZONTAL)
-    seperator1.grid(row = frameRow, column=0, columnspan=3, sticky="ew", pady=10)
-
-    frameRow += 1
+def deleteUserRow(frameRow):
     deleteUserButton = Button(inputFrame, text = "Delete user", command = deleteUser)
     deleteUserButton.grid( row = frameRow, column=0, pady= 10, sticky= W + E)
     deleteUserButton.configure(width=10, height=2)
 
-    return idEntryElement, addButton, 
 
-def initalizeInputFrame(rootIn):
-    global inputFrame, root, selectedService, knownPostsListVar, unknownPostsListVar
-    root = rootIn
-    
-    inputFrame = Frame(root)
-    inputFrame.grid_propagate(False)
-    idEntryElement, addButton = buildFrame()
 
-    operationHelper.passElements(idEntryElement, selectedService, addUserResultEle, addButton, knownPostsListVar, unknownPostsListVar)
-    return inputFrame
 
 def moveKnownToUnknown():
     global listKnownPosts
@@ -166,9 +192,9 @@ def setUnAndKnownLists(unknown, known):
     
 def deleteUser():
     user = idEntryElement.get()
-    service =  selectedService.get()
+    service =  selectedServiceVar.get()
     if(databaseHelper.getUserData(user, service) == []):
-        addUserResultEle.config(bg="orange", text="Couldnt find user to delete")
+        viewAddIdStatusLabel.config(bg="orange", text="Couldnt find user to delete")
     else:
         databaseHelper.deleteUserData(user, service)
-        addUserResultEle.config(bg="green", text="Deleted user")
+        viewAddIdStatusLabel.config(bg="green", text="Deleted user")

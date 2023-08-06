@@ -9,3 +9,5 @@ WEBSITES = [
     "Gumroad",
     "SubscribeStar",
 ]
+
+DATABASE_FILENAME = "database.json"

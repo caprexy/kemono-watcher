@@ -1,5 +1,4 @@
 from tkinter import *
-from PIL import ImageTk, Image
 from functions.inputFrameHelper import *
 from functions.outputFrameHelper import *
 

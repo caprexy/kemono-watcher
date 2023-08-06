@@ -3,34 +3,28 @@ import os
 import urllib.request
 from . import constants
 
-databaseFileName = "database.json"
 database = None
 addUserResultEle = None
 addButtonutton = None
 
 # database management
-def initalizeDatabase(addUserResultEleIn, addButtonuttonIn):
-    global database, addUserResultEle, addButtonutton
-
-    addUserResultEle = addUserResultEleIn
-    addButtonutton = addButtonuttonIn
-
+def initalizeDatabase():
+    global database
     # check if database exists, if it doesn't then initalize it
-    if(not os.path.isfile("./"+databaseFileName)):
+    if(not os.path.isfile("./"+constants.DATABASE_FILENAME)):
         # build first database
         database = {}
         for website in constants.WEBSITES:
             database[website] = {}
 
         json_object = json.dumps(database, indent=4)
-        with open(databaseFileName, 'w') as outfile:
+        with open(constants.DATABASE_FILENAME, 'w') as outfile:
             outfile.write(json_object)
     else: # if it does then load it
-        with open(databaseFileName, 'r') as openfile:
+        with open(constants.DATABASE_FILENAME, 'r') as openfile:
             database = json.load(openfile)
 
 def userExists(userId, service):
-    global database
     return userId in database[service]
 
 def writeUser(userId, service):
@@ -92,7 +86,7 @@ def deleteUserData(userId, service):
 def writeDatabase():
     global database
     json_object = json.dumps(database, indent=4)
-    with open(databaseFileName, 'w') as outfile:
+    with open(constants.DATABASE_FILENAME, 'w') as outfile:
         outfile.write(json_object)
 
 def getUnknownPosts():
