@@ -14,8 +14,8 @@ selectedServiceVar = None
 knownPostsListVar = None
 unknownPostsListVar = None
 
-listUnknownPosts = None
-listKnownPosts = None
+unknownPostsListbox = None
+knownPostsListbox = None
 
 idEntryElement = None
 viewAddIdStatusLabel = None
@@ -98,21 +98,21 @@ def seperatorRow(frameRow):
     seperator1.grid(row = frameRow, column=0, columnspan=3, sticky="ew", pady=10)
 
 def knownPostsRow(frameRow):
-    global  knownPostsListVar, unknownPostsListVar, listUnknownPosts, listKnownPosts
+    global  knownPostsListVar, unknownPostsListVar, unknownPostsListbox, knownPostsListbox
     knownPostsLabel = Label(inputFrame, text="Known posts")
     knownPostsLabel.grid(row=frameRow, column=0)
 
     knownPostsListVar = StringVar(value=[])
-    listKnownPosts = Listbox(inputFrame, selectmode= "extended", listvariable=knownPostsListVar)
-    listKnownPosts.grid( row=frameRow, column=1, pady= 10, sticky= "nsew")
-    listKnownPosts.configure(width=10, height=2)
+    knownPostsListbox = Listbox(inputFrame, selectmode= "extended", listvariable=knownPostsListVar)
+    knownPostsListbox.grid( row=frameRow, column=1, pady= 10, sticky= "nsew")
+    knownPostsListbox.configure(width=10, height=2)
     inputFrame.grid_rowconfigure(frameRow, minsize=200)
 
-    moveKnownToUnknownButton = Button(inputFrame, text = "Move known post to unknown", command= moveKnownToUnknown)
+    moveKnownToUnknownButton = Button(inputFrame, text = "Move known post to unknown", command= operationHelper.moveKnownToUnknown)
     moveKnownToUnknownButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
     moveKnownToUnknownButton.configure(width=10, height=2)
 
-    operationHelper.setKnownPostVar(knownPostsListVar)
+    operationHelper.setKnownPostVarList(knownPostsListVar, knownPostsListbox)
 
 def unknownPostsRow(frameRow):
     
@@ -120,81 +120,21 @@ def unknownPostsRow(frameRow):
     unknownPostLabels.grid(row=frameRow, column=0)
 
     unknownPostsListVar = StringVar(value=[])
-    listUnknownPosts = Listbox(inputFrame, selectmode= "extended", listvariable=unknownPostsListVar)
-    listUnknownPosts.grid( row=frameRow, column=1, pady= 10,   sticky= "nsew")
-    listUnknownPosts.configure(width=10, height=2)
+    unknownPostsListbox = Listbox(inputFrame, selectmode= "extended", listvariable=unknownPostsListVar)
+    unknownPostsListbox.grid( row=frameRow, column=1, pady= 10,   sticky= "nsew")
+    unknownPostsListbox.configure(width=10, height=2)
     inputFrame.grid_rowconfigure(frameRow, minsize=200)
     
-    moveUnknownToKnownButton = Button(inputFrame, text = "Move unknown post to known", command= moveUnknownToKnown)
+    moveUnknownToKnownButton = Button(inputFrame, text = "Move unknown post to known", command= operationHelper.moveUnknownToKnown)
     moveUnknownToKnownButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
     moveUnknownToKnownButton.configure(width=10, height=2)
 
-    operationHelper.setUnknownPostVar(unknownPostsListVar)
+    operationHelper.setUnknownPostVarList(unknownPostsListVar, unknownPostsListbox)
 
 def deleteUserRow(frameRow):
-    deleteUserButton = Button(inputFrame, text = "Delete user", command = deleteUser)
+    deleteUserButton = Button(inputFrame, text = "Delete user", command = operationHelper.deleteUser)
     deleteUserButton.grid( row = frameRow, column=0, pady= 10, sticky= W + E)
     deleteUserButton.configure(width=10, height=2)
 
 
 
-
-def moveKnownToUnknown():
-    global listKnownPosts
-    knownList, unknownList = getUnAndKnownLists()
-
-    knownList, unknownList = moveAToB(knownList, unknownList, listKnownPosts.curselection())
-
-    setUnAndKnownLists(unknownList, knownList)
-    
-def moveUnknownToKnown():
-    global listUnknownPosts
-    knownList, unknownList = getUnAndKnownLists()
-
-    unknownList, knownList = moveAToB(unknownList, knownList, listUnknownPosts.curselection())
-
-    setUnAndKnownLists(unknownList, knownList)
-    
-
-def moveAToB(a, b, aSelection):
-
-    selectedIds = []
-    for selectedIndex in aSelection:
-        selectedIds.append(a[selectedIndex])
-    for id in selectedIds:
-        b.append(id)
-        a.remove(id)
-
-    a.sort()
-    a.reverse()
-
-    b.sort()
-    b.reverse()
-    
-    return a, b
-    
-def getUnAndKnownLists():
-    global knownPostsListVar, unknownPostsListVar
-    knownList = []
-    unknownList = []
-
-    knownList = operationHelper.formatStrVarToList(knownPostsListVar)
-    unknownList = operationHelper.formatStrVarToList(unknownPostsListVar)
-
-    return knownList, unknownList
-
-def setUnAndKnownLists(unknown, known):
-    knownPostsListVar.set(known)
-    unknownPostsListVar.set(unknown)
-
-    operationHelper.updateDatabase()
-
-    
-def deleteUser():
-    user = idEntryElement.get()
-    service =  selectedServiceVar.get()
-    if(databaseHelper.getUserData(user, service) == []):
-        viewAddIdStatusLabel.config(bg="orange", text="Couldnt find user to delete")
-    else:
-        databaseHelper.deleteUserData(user, service)
-        viewAddIdStatusLabel.config(bg="green", text="Deleted user")

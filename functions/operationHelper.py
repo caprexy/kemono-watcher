@@ -9,6 +9,9 @@ addButtonutton = None
 knownPostsListVar = None
 unknownPostsListVar = None
 
+knownPostsListbox = None
+unknownPostsListbox = None
+
 databaseHelper.initalizeDatabase()
 
 def setServiceAndUserId(selectedServiceVar, userIdEle):
@@ -24,15 +27,17 @@ def setAddButton(addButtonuttonIn):
     global addButtonutton
     addButtonutton = addButtonuttonIn
 
-def setKnownPostVar(knownPostsListVarIn):
-    global knownPostsListVar
+def setKnownPostVarList(knownPostsListVarIn, knownPostsListboxIn):
+    global knownPostsListVar, knownPostsListbox
 
     knownPostsListVar = knownPostsListVarIn
+    knownPostsListbox = knownPostsListboxIn
 
-def setUnknownPostVar(unknownPostsListVarIn):
-    global unknownPostsListVar
+def setUnknownPostVarList(unknownPostsListVarIn, unknownPostsListboxIn):
+    global unknownPostsListVar, unknownPostsListbox
     
     unknownPostsListVar = unknownPostsListVarIn
+    unknownPostsListbox = unknownPostsListboxIn
 
 # actual operations
 def addUser():
@@ -87,3 +92,62 @@ def formatStrVarToList(strVar):
         finList = strVar.get()[1:-1].replace('\'','').replace(' ','').split(",")
         if(finList[-1] == ''): finList.pop()
     return finList
+
+
+def moveKnownToUnknown():
+    knownList, unknownList = getUnAndKnownLists()
+
+    knownList, unknownList = moveAToB(knownList, unknownList, knownPostsListbox.curselection())
+
+    setUnAndKnownLists(unknownList, knownList)
+    
+def moveUnknownToKnown():
+    knownList, unknownList = getUnAndKnownLists()
+
+    unknownList, knownList = moveAToB(unknownList, knownList, unknownPostsListbox.curselection())
+
+    setUnAndKnownLists(unknownList, knownList)
+    
+
+def moveAToB(a, b, aSelection):
+
+    selectedIds = []
+    for selectedIndex in aSelection:
+        selectedIds.append(a[selectedIndex])
+    for id in selectedIds:
+        b.append(id)
+        a.remove(id)
+
+    a.sort()
+    a.reverse()
+
+    b.sort()
+    b.reverse()
+    
+    return a, b
+    
+def getUnAndKnownLists():
+    global knownPostsListVar, unknownPostsListVar
+    knownList = []
+    unknownList = []
+
+    knownList = formatStrVarToList(knownPostsListVar)
+    unknownList = formatStrVarToList(unknownPostsListVar)
+
+    return knownList, unknownList
+
+def setUnAndKnownLists(unknown, known):
+    knownPostsListVar.set(known)
+    unknownPostsListVar.set(unknown)
+
+    updateDatabase()
+
+    
+def deleteUser():
+    user = idEntryElement.get()
+    service =  selectedService.get()
+    if(databaseHelper.getUserData(user, service) == []):
+        viewAddIdStatusLabel.config(bg="orange", text="Couldnt find user to delete")
+    else:
+        databaseHelper.deleteUserData(user, service)
+        viewAddIdStatusLabel.config(bg="green", text="Deleted user")
