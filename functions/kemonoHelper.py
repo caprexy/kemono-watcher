@@ -49,28 +49,33 @@ def getUnreadPostsThread():
             unseenIds = []
 
             for id in idList:
-                if(id not in knownIds and id not in unkownIds):
+                if(id not in knownIds and id not in unkownIds and id not in unseenIds):
                     unseenIds.append(id) #ill assume that updates usually target first page, this can miss
                                             # updates to previous pages
             
             unseenIdsSize = len(unseenIds)
             if(unseenIdsSize != 0): # if we found some new stuff, check all pages until we no longer find new 
                 while(bool(response)): #keep running while contents exists
-                    for obj in response:
-                        idList.append(obj["id"])
 
                     i += 50
                     contents = urllib.request.urlopen(request + str(i)).read()
                     response = json.loads(contents.decode())
+                    for obj in response:
+                        idList.append(obj["id"])
 
                     for id in idList:
-                        if(id not in knownIds and id not in unkownIds):
+                        if(id not in knownIds and id not in unkownIds and id not in unseenIds):
                             unseenIds.append(id)
                     
-                    newUnseenIdsSize = len(unseenIds)
+                    newUnseenIdsSize = len(unseenIds) - unseenIdsSize
                     if(unseenIdsSize == newUnseenIdsSize): # if no change then finish
                         break
                     else:
                         unseenIdsSize = newUnseenIdsSize
+            
+            unkownIds = unkownIds + unseenIds
+            databaseHelper.updateUserData(user, service, knownIds, unkownIds)
     
+    unknownPosts = databaseHelper.getUnknownPosts()
+    newPostsListVar.set(unknownPosts)
     getUpdateStatus.config(text="Finished getting posts from web", bg = "green")
