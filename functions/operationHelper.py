@@ -1,5 +1,7 @@
 from . import databaseHelper
 import threading
+import tkinter
+import webbrowser
 
 idEntryElement = None
 selectedService = None
@@ -10,6 +12,10 @@ knownPostsListVar = None
 unknownPostsListVar = None
 
 knownPostsListbox = None
+unknownPostsListbox = None
+
+usersDatabaseListVar = None
+
 unknownPostsListbox = None
 
 databaseHelper.initalizeDatabase()
@@ -37,6 +43,11 @@ def setUnknownPostVarList(unknownPostsListVarIn, unknownPostsListboxIn):
     global unknownPostsListVar, unknownPostsListbox
     
     unknownPostsListVar = unknownPostsListVarIn
+    unknownPostsListbox = unknownPostsListboxIn
+
+def setSelectUsers(unknownPostsListboxIn):
+    global unknownPostsListbox
+
     unknownPostsListbox = unknownPostsListboxIn
 
 # actual operations
@@ -151,3 +162,40 @@ def deleteUser():
     else:
         databaseHelper.deleteUserData(user, service)
         viewAddIdStatusLabel.config(bg="green", text="Deleted user")
+
+def updateUserList(usersDatabaseListVarIn):
+    global usersDatabaseListVar
+    usersDatabaseListVar = usersDatabaseListVarIn
+    
+    databaseUsers = databaseHelper.getAllUsers()
+
+    userList = []
+    for service in databaseUsers.keys():
+        userList.append(service)
+        serviceUsers = databaseUsers[service]
+        for user in serviceUsers:
+            userList.append(user)
+
+    usersDatabaseListVar.set(userList)
+
+
+def getSelectedUsers():
+    users = formatStrVarToList(usersDatabaseListVar)
+    selectedUser = users[unknownPostsListbox.curselection()[0]]
+
+    if( not selectedUser.isnumeric()): return
+
+    for index in range(users.index(selectedUser), -1, -1):
+        if(users[index].isnumeric() == False):
+            service = users[index]
+
+    selectedService.set(service)
+    idEntryElement.delete(0, tkinter.END)
+    idEntryElement.insert(0, selectedUser)
+    viewUserInfo()
+
+def openUser():
+    global idEntryElement, selectedService, viewAddIdStatusLabel
+    user = idEntryElement.get()
+    service =  selectedService.get()
+    webbrowser.open("https://kemono.party/"+service.lower()+"/user/"+user)

@@ -58,7 +58,7 @@ def writeUser(userId, service):
         return
     # actually write the new user and put it into the database
     database[service][userId] = {"checkedPostIds":idList,
-                                 "uncheckedPostIds":[]
+                                 "uncheckedPostIds":[],
                                  }
     addUserResultEle.config(text="User is now in database", bg = "green")
     writeDatabase()
@@ -77,6 +77,7 @@ def updateUserData(userId, service, knownList, unknownList):
             "uncheckedPostIds":unknownList}
     
     database[service][userId] = data
+    writeDatabase()
 
 def deleteUserData(userId, service):
 
