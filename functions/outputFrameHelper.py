@@ -1,6 +1,7 @@
 from tkinter import *
 from . import kemonoHelper
-from . import databaseHelper
+
+from . import databaseModel
 import webbrowser
 
 # frame information
@@ -9,6 +10,7 @@ outputFrame = None
 getUpdateStatus = None
 listKnownPosts = None
 newPostsListVar = None
+database = None
 
 def buildFrame():
     global root,outputFrame, listKnownPosts, newPostsListVar
@@ -42,15 +44,16 @@ def buildFrame():
 
 
     
-def initalizeOutputFrame(rootIn):
-    global root,outputFrame
+def initalizeOutputFrame(rootIn, databaseIn):
+    global root,outputFrame, database
     root = rootIn
+    database = databaseIn
 
     outputFrame = Frame(root, bg="grey")
     outputFrame.grid_propagate(False)
 
     newPostsListVar, getUpdateStatus, updatePostsButton = buildFrame()
-    kemonoHelper.passVars(newPostsListVar, getUpdateStatus, updatePostsButton)
+    kemonoHelper.passVars(newPostsListVar, getUpdateStatus, updatePostsButton, database)
 
     return outputFrame
 
@@ -64,7 +67,7 @@ def knowUnknownPost():
     global listKnownPosts
     for selection in listKnownPosts.curselection():
         userId, service, postId = listKnownPosts.get(selection).split(",")
-        databaseHelper.knowUnknownPost( userId, service, postId)
+        database.knowUnknownPost(userId, service, postId)
     
     offset = 0
     for selection in listKnownPosts.curselection():

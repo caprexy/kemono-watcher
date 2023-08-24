@@ -1,4 +1,7 @@
-from . import databaseHelper
+
+from . import databaseModel
+from . import statusHelper
+import re
 import threading
 import tkinter
 import webbrowser
@@ -6,32 +9,34 @@ import webbrowser
 idEntryElement = None
 selectedService = None
 
-viewAddIdStatusLabel = None
-addButtonutton = None
+addButton = None
 knownPostsListVar = None
 unknownPostsListVar = None
 
 knownPostsListbox = None
 unknownPostsListbox = None
 
-usersDatabaseListVar = None
+knownUsersListVar = None
 
 unknownPostsListbox = None
 
-databaseHelper.initalizeDatabase()
+database = None
+def initalize(databaseIn):
+    global database
+    database = databaseIn
 
+    updateKnownListVar()
+
+######
+## set needed elements from the frame
 def setServiceAndUserId(selectedServiceVar, userIdEle):
     global idEntryElement, selectedService
     selectedService = selectedServiceVar
     idEntryElement = userIdEle
 
-def setViewAddIdStatusLabel(viewAddIdStatusLabelIn):
-    global viewAddIdStatusLabel
-    viewAddIdStatusLabel = viewAddIdStatusLabelIn
-
-def setAddButton(addButtonuttonIn):
-    global addButtonutton
-    addButtonutton = addButtonuttonIn
+def setAddButton(addButtonIn):
+    global addButton
+    addButton = addButtonIn
 
 def setKnownPostVarList(knownPostsListVarIn, knownPostsListboxIn):
     global knownPostsListVar, knownPostsListbox
@@ -45,57 +50,81 @@ def setUnknownPostVarList(unknownPostsListVarIn, unknownPostsListboxIn):
     unknownPostsListVar = unknownPostsListVarIn
     unknownPostsListbox = unknownPostsListboxIn
 
-def setSelectUsers(unknownPostsListboxIn):
-    global unknownPostsListbox
-
+def setDisplayUsers(knownUsersListVarIn, unknownPostsListboxIn):
+    global unknownPostsListbox, knownUsersListVar
+    
+    knownUsersListVar = knownUsersListVarIn
     unknownPostsListbox = unknownPostsListboxIn
+######
+
 
 # actual operations
 def addUser():
-    addButtonutton["state"] = "disabled"
-    global idEntryElement, selectedService, viewAddIdStatusLabel
+    global idEntryElement, selectedService, addButton
+    addButton["state"] = "disabled"
     user = idEntryElement.get()
     service =  selectedService.get()
     
-    if(len(idEntryElement.get()) == 0):
-        viewAddIdStatusLabel.config(text="Missing Id!", bg = "red")
-    elif(databaseHelper.userExists(user, service)):
-        viewAddIdStatusLabel.config(text="User already exists!", bg = "red")
+    if(len(user) == 0):
+        statusHelper.setMemberOperationStatus("Missing Id!", "red")
+        addButton["state"] = "normal"
+    elif(database.userExists(user, service)):
+        statusHelper.setMemberOperationStatus("User already exists!", "red")
+        addButton["state"] = "normal"
     else:
-        viewAddIdStatusLabel.config(text="", bg = "#f0f0f0")
-        threading.Thread(target=databaseHelper.writeUser, args=(user, service)).start()
-    addButtonutton["state"] = "normal"
+        threading.Thread(target=database.createUser, args=(user, service, addButton)).start()
+    updateKnownListVar()
+    viewUserInfo()
 
 def viewUserInfo():
-    global idEntryElement, selectedService, viewAddIdStatusLabel, knownPostsListVar, unknownPostsListVar
+    global idEntryElement, selectedService, knownPostsListVar, unknownPostsListVar
 
-    user = idEntryElement.get()
+    userId = idEntryElement.get()
     service =  selectedService.get()
 
-    data = databaseHelper.getUserData(user, service)
-    if(data == []):
-        viewAddIdStatusLabel.config(text="User couldnt find user!", bg = "red")
+    userObj = database.getUserObj(userId, service)
+    if(userObj == None):
+        statusHelper.setMemberOperationStatus(text="User couldnt find user!", bg = "red")
         return
     
-    knownPostsListVar.set(data["checkedPostIds"])
-    unknownPostsListVar.set(data["uncheckedPostIds"])
+    knownPostsListVar.set(userObj.checkedPostIds)
+    unknownPostsListVar.set(userObj.uncheckedPostIds)
     
+    statusHelper.setMemberOperationStatus("Got user!", "green")
 
-def updateDatabase():
-    global idEntryElement, selectedService, viewAddIdStatusLabel, knownPostsListVar, unknownPostsListVar
 
+def deleteUser():
     user = idEntryElement.get()
     service =  selectedService.get()
+    if(databaseHelper.getUserData(user, service) == []):
+        statusHelper.setMemberOperationStatus(bg="orange", text="Couldnt find user to delete")
+    else:
+        databaseHelper.deleteUserData(user, service)
+        statusHelper.setMemberOperationStatus(bg="green", text="Deleted user")
 
-    knownList = []
-    unknownList = []
+def getSelectedUsers():
+    users = formatStrVarToList(knownUsersListVar)
+    selectedVal = users[unknownPostsListbox.curselection()[0]]
 
-    knownList = formatStrVarToList(knownPostsListVar)
-    unknownList = formatStrVarToList(unknownPostsListVar)
+    service, selectedUser = selectedVal.split(":")
 
-    
-    databaseHelper.updateUserData(user, service, knownList, unknownList)
-    databaseHelper.writeDatabase()
+    selectedService.set(service)
+    idEntryElement.delete(0, tkinter.END)
+    idEntryElement.insert(0, selectedUser)
+    viewUserInfo()
+
+def updateKnownListVar():
+    userList = database.getAllUserObjs()
+    knownUsers = []
+    for user in userList:
+        knownUsers.append(f"{user.service}:{user.id}")
+    knownUsersListVar.set(knownUsers)
+
+def openUserPage():
+    global idEntryElement, selectedService
+    user = idEntryElement.get()
+    service =  selectedService.get()
+    webbrowser.open("https://kemono.party/"+service.lower()+"/user/"+user)
 
 def formatStrVarToList(strVar):
     finList = []
@@ -151,51 +180,16 @@ def setUnAndKnownLists(unknown, known):
     knownPostsListVar.set(known)
     unknownPostsListVar.set(unknown)
 
-    updateDatabase()
+    # updating the database and userobj
+    userId = idEntryElement.get()
+    service =  selectedService.get()
+
+    userObj = database.getUserObj(userId, service)
+
+    userObj.checkedPostIds = known
+    userObj.uncheckedPostIds = unknown
+
+    database.writeDatabase()
+
 
     
-def deleteUser():
-    user = idEntryElement.get()
-    service =  selectedService.get()
-    if(databaseHelper.getUserData(user, service) == []):
-        viewAddIdStatusLabel.config(bg="orange", text="Couldnt find user to delete")
-    else:
-        databaseHelper.deleteUserData(user, service)
-        viewAddIdStatusLabel.config(bg="green", text="Deleted user")
-
-def updateUserList(usersDatabaseListVarIn):
-    global usersDatabaseListVar
-    usersDatabaseListVar = usersDatabaseListVarIn
-    
-    databaseUsers = databaseHelper.getAllUsers()
-
-    userList = []
-    for service in databaseUsers.keys():
-        userList.append(service)
-        serviceUsers = databaseUsers[service]
-        for user in serviceUsers:
-            userList.append(user)
-
-    usersDatabaseListVar.set(userList)
-
-
-def getSelectedUsers():
-    users = formatStrVarToList(usersDatabaseListVar)
-    selectedUser = users[unknownPostsListbox.curselection()[0]]
-
-    if( not selectedUser.isnumeric()): return
-
-    for index in range(users.index(selectedUser), -1, -1):
-        if(users[index].isnumeric() == False):
-            service = users[index]
-
-    selectedService.set(service)
-    idEntryElement.delete(0, tkinter.END)
-    idEntryElement.insert(0, selectedUser)
-    viewUserInfo()
-
-def openUser():
-    global idEntryElement, selectedService, viewAddIdStatusLabel
-    user = idEntryElement.get()
-    service =  selectedService.get()
-    webbrowser.open("https://kemono.party/"+service.lower()+"/user/"+user)

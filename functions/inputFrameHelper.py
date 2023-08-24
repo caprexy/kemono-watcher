@@ -1,8 +1,8 @@
 from tkinter import *
 from tkinter import ttk
 from . import operationHelper
-from . import databaseHelper
 from . import constants
+from . import statusHelper
 
 # frames operated in
 parentFrame = None
@@ -23,12 +23,13 @@ viewAddIdStatusLabel = None
 # operation options
 options = constants.WEBSITES
 
-def initalizeInputFrame(rootIn):
+def initalizeInputFrame(rootIn, database):
     global inputFrame, parentFrame
     parentFrame = rootIn
     
     inputFrame = Frame(rootIn)
     buildFrame()
+    operationHelper.initalize(database)
 
     return inputFrame
 
@@ -82,23 +83,23 @@ def enterServiceAndIdRow(frameRow):
 
 def viewAddIdRow(frameRow):
     global viewAddIdStatusLabel
-    viewButton = Button(inputFrame, text = "View id info", command = operationHelper.viewUserInfo)
-    viewButton.grid( row = frameRow, column=0, pady= 10, sticky= W + E)
-    viewButton.configure(width=10, height=2)
-
     addButton = Button(inputFrame, text = "Add id to subscriptions", command = operationHelper.addUser)
     addButton.grid( row = frameRow, column=1, pady= 10, sticky= W + E)
-    addButton.configure(width=10, height=2)
+    addButton.configure(width=10, height=2)    
 
-    openUserButton = Button(inputFrame, text = "Open user", command = operationHelper.openUser)
-    openUserButton.grid( row = frameRow, column=1, pady= 10, sticky= W + E)
-    openUserButton.configure(width=10, height=2)
-    
-
-    viewAddIdStatusLabel = Label(inputFrame, text="")
-    viewAddIdStatusLabel.grid(row=frameRow, column=2)
-    operationHelper.setViewAddIdStatusLabel(viewAddIdStatusLabel)
+    userOperationStatusLabel = Label(inputFrame, text="")
+    userOperationStatusLabel.grid(row=frameRow, column=2)
+    statusHelper.setMemberOperationStatusLabel(userOperationStatusLabel)
     operationHelper.setAddButton(addButton)
+
+def deleteUserRow(frameRow):
+    deleteUserButton = Button(inputFrame, text = "Delete user", command = operationHelper.deleteUser, bg = "red")
+    deleteUserButton.grid( row = frameRow, column=0, pady= 10, sticky= W + E)
+    deleteUserButton.configure(width=10, height=2)
+
+    openUserButton = Button(inputFrame, text = "Open user page", command = operationHelper.openUserPage)
+    openUserButton.grid( row = frameRow, column=2, pady= 10, sticky= W + E)
+    openUserButton.configure(width=10, height=2)
 
 def seperatorRow(frameRow):
     seperator1 = ttk.Separator(inputFrame, orient=HORIZONTAL)
@@ -138,26 +139,19 @@ def unknownPostsRow(frameRow):
 
     operationHelper.setUnknownPostVarList(unknownPostsListVar, unknownPostsListbox)
 
-def deleteUserRow(frameRow):
-    deleteUserButton = Button(inputFrame, text = "Delete user", command = operationHelper.deleteUser, bg = "red")
-    deleteUserButton.grid( row = frameRow, column=0, pady= 10, sticky= W + E)
-    deleteUserButton.configure(width=10, height=2)
-
-
 
 def displayUsers(frameRow):
     unknownPostLabels = Label(inputFrame, text="Known users")
     unknownPostLabels.grid(row=frameRow, column=0)
 
-    usersDatabaseListVar = StringVar(value=[])
-    unknownPostsListbox = Listbox(inputFrame, selectmode= "single", listvariable=usersDatabaseListVar)
+    knownUsersListVar = StringVar(value=[])
+    unknownPostsListbox = Listbox(inputFrame, selectmode= "single", listvariable=knownUsersListVar)
     unknownPostsListbox.grid( row=frameRow, column=1, pady= 10,   sticky= "nsew")
     unknownPostsListbox.configure(width=10, height=1)
     inputFrame.grid_rowconfigure(frameRow, minsize=100)
-    operationHelper.updateUserList(usersDatabaseListVar)
 
     getSelectedUserButton = Button(inputFrame, text = "Get selected user", command= operationHelper.getSelectedUsers)
     getSelectedUserButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
     getSelectedUserButton.configure(width=10, height=2)
 
-    operationHelper.setSelectUsers(unknownPostsListbox)
+    operationHelper.setDisplayUsers(knownUsersListVar, unknownPostsListbox)
