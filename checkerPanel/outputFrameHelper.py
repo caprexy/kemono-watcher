@@ -1,13 +1,12 @@
 from tkinter import *
 from . import kemonoHelper
+from inputPanel import statusHelper
 
-from . import databaseModel
 import webbrowser
 
 # frame information
 root = None
 outputFrame = None
-getUpdateStatus = None
 listKnownPosts = None
 newPostsListVar = None
 database = None
@@ -25,6 +24,7 @@ def buildFrame():
 
     getUpdateStatus = Label(outputFrame, text="No updates gotten", bg = "Grey", wraplength=100)
     getUpdateStatus.grid(row=frameRow, column=0)
+    statusHelper.setGetUpdatesStatusLabel(getUpdateStatus)
 
     frameRow += 1
     newPostsListVar = StringVar(value=[])
@@ -40,7 +40,7 @@ def buildFrame():
     finishPostsButton = Button(outputFrame, text = "Finish selected posts", command = knowUnknownPost)
     finishPostsButton.grid( row = frameRow, column=2, pady= 10, sticky= W + E)
 
-    return newPostsListVar, getUpdateStatus, updatePostsButton
+    return newPostsListVar, updatePostsButton
 
 
     
@@ -52,21 +52,21 @@ def initalizeOutputFrame(rootIn, databaseIn):
     outputFrame = Frame(root, bg="grey")
     outputFrame.grid_propagate(False)
 
-    newPostsListVar, getUpdateStatus, updatePostsButton = buildFrame()
-    kemonoHelper.passVars(newPostsListVar, getUpdateStatus, updatePostsButton, database)
+    newPostsListVar, updatePostsButton = buildFrame()
+    kemonoHelper.passVars(newPostsListVar, updatePostsButton, database)
 
     return outputFrame
 
 def openSelectedIds():
     global listKnownPosts
     for selection in listKnownPosts.curselection():
-        userId, service, postId = listKnownPosts.get(selection).split(",")
+        postId, service, userId = listKnownPosts.get(selection).split(",")
         webbrowser.open("https://kemono.party/"+service.lower()+"/user/"+userId+"/post/"+postId)
 
 def knowUnknownPost():
     global listKnownPosts
     for selection in listKnownPosts.curselection():
-        userId, service, postId = listKnownPosts.get(selection).split(",")
+        postId, service, userId = listKnownPosts.get(selection).split(",")
         database.knowUnknownPost(userId, service, postId)
     
     offset = 0

@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from . import operationHelper
-from . import constants
+import constants
 from . import statusHelper
 
 # frames operated in
@@ -77,6 +77,7 @@ def enterServiceAndIdRow(frameRow):
     serviceSelectEle.configure(width=10, height=2)
 
     idEntryElement = Entry(inputFrame)
+    idEntryElement.insert(0,"71308758")
     idEntryElement.grid(row=frameRow, column=2)
 
     operationHelper.setServiceAndUserId(selectedServiceVar, idEntryElement)
@@ -89,7 +90,7 @@ def viewAddIdRow(frameRow):
 
     userOperationStatusLabel = Label(inputFrame, text="")
     userOperationStatusLabel.grid(row=frameRow, column=2)
-    statusHelper.setMemberOperationStatusLabel(userOperationStatusLabel)
+    statusHelper.setUserOperationStatusLabel(userOperationStatusLabel)
     operationHelper.setAddButton(addButton)
 
 def deleteUserRow(frameRow):
@@ -145,13 +146,13 @@ def displayUsers(frameRow):
     unknownPostLabels.grid(row=frameRow, column=0)
 
     knownUsersListVar = StringVar(value=[])
-    unknownPostsListbox = Listbox(inputFrame, selectmode= "single", listvariable=knownUsersListVar)
-    unknownPostsListbox.grid( row=frameRow, column=1, pady= 10,   sticky= "nsew")
-    unknownPostsListbox.configure(width=10, height=1)
+    knownUsersListbox = Listbox(inputFrame, selectmode= "single", listvariable=knownUsersListVar)
+    knownUsersListbox.grid( row=frameRow, column=1, pady= 10,   sticky= "nsew")
+    knownUsersListbox.configure(width=10, height=1)
     inputFrame.grid_rowconfigure(frameRow, minsize=100)
 
     getSelectedUserButton = Button(inputFrame, text = "Get selected user", command= operationHelper.getSelectedUsers)
     getSelectedUserButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
     getSelectedUserButton.configure(width=10, height=2)
 
-    operationHelper.setDisplayUsers(knownUsersListVar, unknownPostsListbox)
+    operationHelper.setDisplayUsers(knownUsersListVar, knownUsersListbox)

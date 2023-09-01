@@ -1,20 +1,17 @@
-
-from . import databaseModel
+from inputPanel import statusHelper
 import threading
 import urllib.request
 import json
 
 newPostsListVar = None 
-getUpdateStatus = None
 updatePostsButton = None
 
 database = None
 
-def passVars(newPostsListVarIn, getUpdateStatusIn, updatePostsButtonIn, databaseIn):
-    global newPostsListVar, getUpdateStatus, updatePostsButton, database
+def passVars(newPostsListVarIn, updatePostsButtonIn, databaseIn):
+    global newPostsListVar, updatePostsButton, database
 
     newPostsListVar = newPostsListVarIn
-    getUpdateStatus = getUpdateStatusIn
     updatePostsButton = updatePostsButtonIn
     database = databaseIn
 
@@ -22,19 +19,19 @@ def getUnreadPosts():
     threading.Thread(target=getUnreadPostsThread).start()
 def getUnreadPostsThread():
     updatePostsButton.config(state="disabled")
-    unknownPosts = database.getAllUnknownPosts()
+    unknownPosts = database.getAllUnknownPostsIdandService()
     newPostsListVar.set(unknownPosts)
-    getUpdateStatus.config(text="Got database unknown posts!", bg = "orange")
+    statusHelper.setGetUpdatesStatusLabelValues("Got database unknown posts!", "orange")
 
     ## here we would go fetch api, compare posts info, and then continue to update newPostsListVar
     updatePostsButton.config(state="normal")
 
-    users = database.getAllUserObjs()
+    users = database.getAllUsersObj()
 
     for user in users:
         service = user.service
-        userId = user.id
-        getUpdateStatus.config(text="Getting posts from "+service+" for id:"+userId, bg = "orange")
+        userId = str(user.id)
+        statusHelper.setGetUpdatesStatusLabelValues("Getting posts from "+service+" for id:"+userId, "orange")
         
         i=0
         request = "https://kemono.party/api/" + service.lower() + "/user/" + str(userId) + "?o=" + str(i)
@@ -79,6 +76,6 @@ def getUnreadPostsThread():
         unknownIds = unknownIds + unseenIds
         database.updateUserData(userId, service, knownIds, unknownIds)
     
-    unknownPosts = database.getAllUnknownPosts()
+    unknownPosts = database.getAllUnknownPostsIdandService()
     newPostsListVar.set(unknownPosts)
-    getUpdateStatus.config(text="Finished getting posts from web", bg = "green")
+    statusHelper.setGetUpdatesStatusLabelValues("Finished getting posts from web", "green")

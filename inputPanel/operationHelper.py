@@ -1,10 +1,8 @@
-
-from . import databaseModel
 from . import statusHelper
-import re
 import threading
 import tkinter
 import webbrowser
+import logging
 
 idEntryElement = None
 selectedService = None
@@ -17,8 +15,7 @@ knownPostsListbox = None
 unknownPostsListbox = None
 
 knownUsersListVar = None
-
-unknownPostsListbox = None
+knownUsersListbox = None
 
 database = None
 def initalize(databaseIn):
@@ -50,11 +47,11 @@ def setUnknownPostVarList(unknownPostsListVarIn, unknownPostsListboxIn):
     unknownPostsListVar = unknownPostsListVarIn
     unknownPostsListbox = unknownPostsListboxIn
 
-def setDisplayUsers(knownUsersListVarIn, unknownPostsListboxIn):
-    global unknownPostsListbox, knownUsersListVar
+def setDisplayUsers(knownUsersListVarIn, knownUsersListboxIn):
+    global knownUsersListbox, knownUsersListVar
     
     knownUsersListVar = knownUsersListVarIn
-    unknownPostsListbox = unknownPostsListboxIn
+    knownUsersListbox = knownUsersListboxIn
 ######
 
 
@@ -65,46 +62,68 @@ def addUser():
     user = idEntryElement.get()
     service =  selectedService.get()
     
+    logging.info("Trying to add a user")
+
     if(len(user) == 0):
-        statusHelper.setMemberOperationStatus("Missing Id!", "red")
+        statusHelper.setuserOperationStatusValues("Missing Id!", "red")
         addButton["state"] = "normal"
-    elif(database.userExists(user, service)):
-        statusHelper.setMemberOperationStatus("User already exists!", "red")
+        return
+    elif not user.isnumeric():
+        statusHelper.setuserOperationStatusValues("Non numeric id!", "red")
+        addButton["state"] = "normal"
+        return
+    
+    if(database.userExists(user, service)):
+        statusHelper.setuserOperationStatusValues("User already exists!", "red")
         addButton["state"] = "normal"
     else:
-        threading.Thread(target=database.createUser, args=(user, service, addButton)).start()
-    updateKnownListVar()
+        threading.Thread(target=database.createUser, args=(user, service, addButton, updateOperationPanel)).start()
     viewUserInfo()
+    updateKnownListVar()
+
+def updateOperationPanel():
+    viewUserInfo()
+    updateKnownListVar()
+
+def clearOperationPanel():
+    global idEntryElement, selectedService
+    idEntryElement.delete(0, tkinter.END)
+    knownPostsListVar.set([])
+    unknownPostsListVar.set([])
+    updateKnownListVar()
+    
 
 def viewUserInfo():
     global idEntryElement, selectedService, knownPostsListVar, unknownPostsListVar
 
+    logging.info("Trying to view a user")
+    
     userId = idEntryElement.get()
     service =  selectedService.get()
 
     userObj = database.getUserObj(userId, service)
     if(userObj == None):
-        statusHelper.setMemberOperationStatus(text="User couldnt find user!", bg = "red")
+        statusHelper.setuserOperationStatusValues("Couldnt find user!", "red")
         return
     
+    logging.info("Got user "+ str(userObj))
     knownPostsListVar.set(userObj.checkedPostIds)
     unknownPostsListVar.set(userObj.uncheckedPostIds)
     
-    statusHelper.setMemberOperationStatus("Got user!", "green")
+    statusHelper.setuserOperationStatusValues("Got user!", "green")
 
 
 def deleteUser():
     user = idEntryElement.get()
     service =  selectedService.get()
-    if(databaseHelper.getUserData(user, service) == []):
-        statusHelper.setMemberOperationStatus(bg="orange", text="Couldnt find user to delete")
+    if(database.userExists(user, service) == []):
+        statusHelper.setuserOperationStatusValues("Couldnt find user to delete", "orange")
     else:
-        databaseHelper.deleteUserData(user, service)
-        statusHelper.setMemberOperationStatus(bg="green", text="Deleted user")
+        database.deleteUser(user, service, clearOperationPanel)
 
 def getSelectedUsers():
     users = formatStrVarToList(knownUsersListVar)
-    selectedVal = users[unknownPostsListbox.curselection()[0]]
+    selectedVal = users[knownUsersListbox.curselection()[0]]
 
     service, selectedUser = selectedVal.split(":")
 
@@ -114,10 +133,10 @@ def getSelectedUsers():
     viewUserInfo()
 
 def updateKnownListVar():
-    userList = database.getAllUserObjs()
+    userList = database.getAllUserIdServices()
     knownUsers = []
     for user in userList:
-        knownUsers.append(f"{user.service}:{user.id}")
+        knownUsers.append(f"{user[1]}:{user[0]}")
     knownUsersListVar.set(knownUsers)
 
 def openUserPage():
@@ -186,10 +205,24 @@ def setUnAndKnownLists(unknown, known):
 
     userObj = database.getUserObj(userId, service)
 
+    # error checking to ensure the total values are still the same
+    newList = known + unknown
+    newList.sort()
+
+    if userObj.checkedPostIds == "": userObj.checkedPostIds = []
+    if userObj.uncheckedPostIds == "": userObj.uncheckedPostIds = []
+
+    oldList = userObj.checkedPostIds + userObj.uncheckedPostIds
+    oldList.sort()
+
+    if newList != oldList:
+        logging.error("When trying to update the post lists, frontend != backend!")
+        return
+
     userObj.checkedPostIds = known
     userObj.uncheckedPostIds = unknown
 
-    database.writeDatabase()
+    database.updateUserObj(userObj)
 
 
     
