@@ -1,0 +1,1 @@
+apiSampleCallBytesLocation = "api-pateron-user-sampleCall.bin"
