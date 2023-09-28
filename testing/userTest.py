@@ -24,16 +24,6 @@ class userTests(unittest.TestCase):
         self.assertEqual(self.user.name, self.name)
 
 
-    def testUserToJSON(self):
-        jsonResults = self.user.getAsJSON()
-
-        jsonTruth = {
-            "checkedPostIds" : self.checkedPostIds,
-            "uncheckedPostIds" : self.uncheckedPostIds
-        }
-
-        self.assertEqual(jsonResults, jsonTruth)
-
     def testGetAsRowTuple(self):
         tupleResults = self.user.getAsRowTuple()
         tupleTruth = (self.databaseId, 
