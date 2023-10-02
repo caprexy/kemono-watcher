@@ -1,14 +1,10 @@
 import unittest
 import sys
 import os
-import tkinter as tk
 from unittest.mock import patch, Mock, MagicMock
-import urllib.request
 import testConstants
-import http.client
 import threading
 import json
-import functools
 
 sys.path.append('../')
 

@@ -1,5 +1,5 @@
 from tkinter import *
-from . import kemonoHelper
+from . import outputController
 from inputPanel import statusHelper
 
 import webbrowser
@@ -19,7 +19,7 @@ def buildFrame():
     outputFrame.grid_columnconfigure(2, weight=1, uniform="equal")
 
     frameRow = 1
-    updatePostsButton = Button(outputFrame, text = "Update unread posts", command = kemonoHelper.getUnreadPosts)
+    updatePostsButton = Button(outputFrame, text = "Update unread posts", command = outputController.getUnreadPosts)
     updatePostsButton.grid( row = frameRow, column=1, pady= 10, sticky= W + E)
 
     getUpdateStatus = Label(outputFrame, text="No updates gotten", bg = "Grey", wraplength=100)
@@ -53,7 +53,7 @@ def initalizeOutputFrame(rootIn, databaseIn):
     outputFrame.grid_propagate(False)
 
     newPostsListVar, updatePostsButton = buildFrame()
-    kemonoHelper.passVars(newPostsListVar, updatePostsButton, database)
+    outputController.passVars(newPostsListVar, updatePostsButton, database)
 
     return outputFrame
 

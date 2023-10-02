@@ -222,7 +222,7 @@ def setUnAndKnownLists(unknown, known):
     userObj.checkedPostIds = known
     userObj.uncheckedPostIds = unknown
 
-    database.updateUserObj(userObj)
+    database.replaceDatabaseIdRow(userObj)
 
 
     

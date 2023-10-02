@@ -1,7 +1,8 @@
 import json
+from typing import List
 
 class User(object):
-    def __init__(self, databaseId, name, id, service, checkedPostIds=[], uncheckedPostIds=[]):
+    def __init__(self, databaseId: int, name: str, id: int, service, checkedPostIds: List[int]=[], uncheckedPostIds: List[int]=[]):
         self.databaseId = databaseId
         self.name = name
         self.id = id
@@ -14,15 +15,14 @@ class User(object):
     
     def __repr__(self):
         return f"User {self.id} of service {self.service}"
-    
-    def getAsJSON(self):
-        return {
-            "checkedPostIds" : self.checkedPostIds,
-            "uncheckedPostIds" : self.uncheckedPostIds
-        }
-    
+
     def getAsRowTuple(self):
-        return (self.databaseId, self.name, self.id, self.service, json.dumps(self.checkedPostIds), json.dumps(self.uncheckedPostIds))
+        return (self.databaseId, 
+                      self.name, 
+                      self.id, 
+                      self.service, 
+                      json.dumps(self.checkedPostIds), 
+                      json.dumps(self.uncheckedPostIds))
 
 def convertRowIntoUser(rowTuple):
     databaseId = rowTuple[0]

@@ -1,6 +1,6 @@
 from tkinter import *
-from inputPanel import inputFrameHelper
-from checkerPanel import outputFrameHelper
+from inputPanel import inputView
+from checkerPanel import outputView
 from models import databaseModel
 import logging
 
@@ -20,8 +20,8 @@ mainWindow = PanedWindow(root, orient=HORIZONTAL)
 mainWindow.pack(fill=BOTH, expand=TRUE)
 
 # add said frames
-mainWindow.add(inputFrameHelper.initalizeInputFrame(mainWindow, database), stretch="always")
-mainWindow.add(outputFrameHelper.initalizeOutputFrame(mainWindow, database), stretch="always")
+mainWindow.add(inputView.initalizeInputFrame(mainWindow, database), stretch="always")
+mainWindow.add(outputView.initalizeOutputFrame(mainWindow, database), stretch="always")
 
 
 
