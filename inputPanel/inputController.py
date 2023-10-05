@@ -73,11 +73,11 @@ def addUser():
         addButton["state"] = "normal"
         return
     
-    if(database.userExists(user, service)):
+    if(database.does_user_exist(user, service)):
         statusHelper.setuserOperationStatusValues("User already exists!", "red")
         addButton["state"] = "normal"
     else:
-        threading.Thread(target=database.createUser, args=(user, service, addButton, updateOperationPanel)).start()
+        threading.Thread(target=database.create_user, args=(user, service, addButton, updateOperationPanel)).start()
     viewUserInfo()
     updateKnownListVar()
 
@@ -101,28 +101,28 @@ def viewUserInfo():
     userId = idEntryElement.get()
     service =  selectedService.get()
 
-    userObj = database.getUserObj(userId, service)
+    userObj = database.get_user_obj(userId, service)
     if(userObj == None):
         statusHelper.setuserOperationStatusValues("Couldnt find user!", "red")
         return
     
     logging.info("Got user "+ str(userObj))
-    knownPostsListVar.set(userObj.checkedPostIds)
-    unknownPostsListVar.set(userObj.uncheckedPostIds)
+    knownPostsListVar.set(userObj.checked_post_ids)
+    unknownPostsListVar.set(userObj.unchecked_post_ids)
     
     statusHelper.setuserOperationStatusValues("Got user!", "green")
 
 
-def deleteUser():
+def delete_user():
     user = idEntryElement.get()
     service =  selectedService.get()
-    if(database.userExists(user, service) == []):
+    if(database.does_user_exist(user, service) == []):
         statusHelper.setuserOperationStatusValues("Couldnt find user to delete", "orange")
     else:
-        database.deleteUser(user, service, clearOperationPanel)
+        database.delete_user(user, service, clearOperationPanel)
 
 def getSelectedUsers():
-    users = formatStrVarToList(knownUsersListVar)
+    users = formatStrVarToIntList(knownUsersListVar)
     selectedVal = users[knownUsersListbox.curselection()[0]]
 
     service, selectedUser = selectedVal.split(":")
@@ -133,7 +133,7 @@ def getSelectedUsers():
     viewUserInfo()
 
 def updateKnownListVar():
-    userList = database.getAllUserIdServices()
+    userList = database.get_all_user_id_and_services()
     knownUsers = []
     for user in userList:
         knownUsers.append(f"{user[1]}:{user[0]}")
@@ -145,12 +145,14 @@ def openUserPage():
     service =  selectedService.get()
     webbrowser.open("https://kemono.party/"+service.lower()+"/user/"+user)
 
-def formatStrVarToList(strVar):
-    finList = []
+def formatStrVarToIntList(strVar):
+    newList = []
     if(len( strVar.get()) != 0):
-        finList = strVar.get()[1:-1].replace('\'','').replace(' ','').split(",")
-        if(finList[-1] == ''): finList.pop()
-    return finList
+        newList = strVar.get()[1:-1].replace('\'','').replace(' ','').split(",")
+        if(newList[-1] == ''): newList.pop()
+    # int_list = [int(item) for item in newList]
+    print(newList)
+    return newList
 
 
 def moveKnownToUnknown():
@@ -190,8 +192,8 @@ def getUnAndKnownLists():
     knownList = []
     unknownList = []
 
-    knownList = formatStrVarToList(knownPostsListVar)
-    unknownList = formatStrVarToList(unknownPostsListVar)
+    knownList = formatStrVarToIntList(knownPostsListVar)
+    unknownList = formatStrVarToIntList(unknownPostsListVar)
 
     return knownList, unknownList
 
@@ -203,26 +205,27 @@ def setUnAndKnownLists(unknown, known):
     userId = idEntryElement.get()
     service =  selectedService.get()
 
-    userObj = database.getUserObj(userId, service)
+    userObj = database.get_user_obj(userId, service)
 
     # error checking to ensure the total values are still the same
     newList = known + unknown
     newList.sort()
 
-    if userObj.checkedPostIds == "": userObj.checkedPostIds = []
-    if userObj.uncheckedPostIds == "": userObj.uncheckedPostIds = []
+    if userObj.checked_post_ids == "": userObj.checked_post_ids = []
+    if userObj.unchecked_post_ids == "": userObj.unchecked_post_ids = []
 
-    oldList = userObj.checkedPostIds + userObj.uncheckedPostIds
+    oldList = userObj.checked_post_ids + userObj.unchecked_post_ids
     oldList.sort()
-
+    # print(newList)
+    # print(oldList)
     if newList != oldList:
         logging.error("When trying to update the post lists, frontend != backend!")
         return
 
-    userObj.checkedPostIds = known
-    userObj.uncheckedPostIds = unknown
+    userObj.checked_post_ids = known
+    userObj.unchecked_post_ids = unknown
 
-    database.replaceDatabaseIdRow(userObj)
+    database.update_database_row_user_object(userObj)
 
 
     

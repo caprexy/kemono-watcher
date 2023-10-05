@@ -47,7 +47,7 @@ def buildFrame():
     viewAddIdRow(frameRow)
 
     frameRow += 1
-    deleteUserRow(frameRow)
+    delete_userRow(frameRow)
 
     frameRow += 1
     seperatorRow(frameRow)
@@ -93,10 +93,10 @@ def viewAddIdRow(frameRow):
     statusHelper.setUserOperationStatusLabel(userOperationStatusLabel)
     inputController.setAddButton(addButton)
 
-def deleteUserRow(frameRow):
-    deleteUserButton = Button(inputFrame, text = "Delete user", command = inputController.deleteUser, bg = "red")
-    deleteUserButton.grid( row = frameRow, column=0, pady= 10, sticky= W + E)
-    deleteUserButton.configure(width=10, height=2)
+def delete_userRow(frameRow):
+    delete_userButton = Button(inputFrame, text = "Delete user", command = inputController.delete_user, bg = "red")
+    delete_userButton.grid( row = frameRow, column=0, pady= 10, sticky= W + E)
+    delete_userButton.configure(width=10, height=2)
 
     openUserButton = Button(inputFrame, text = "Open user page", command = inputController.openUserPage)
     openUserButton.grid( row = frameRow, column=2, pady= 10, sticky= W + E)

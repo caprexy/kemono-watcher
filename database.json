@@ -1,7 +1,7 @@
 {
     "Patreon": {
         "17801042": {
-            "checkedPostIds": [
+            "checked_post_ids": [
                 "86464219",
                 "86464193",
                 "86464145",
@@ -538,7 +538,7 @@
                 "33048771",
                 "32214144"
             ],
-            "uncheckedPostIds": [
+            "unchecked_post_ids": [
                 "87737081",
                 "87470696",
                 "87470700",
@@ -548,7 +548,7 @@
             ]
         },
         "4314103": {
-            "checkedPostIds": [
+            "checked_post_ids": [
                 "9590300",
                 "8840390",
                 "87079181",
@@ -728,12 +728,12 @@
                 "11131714",
                 "10222728"
             ],
-            "uncheckedPostIds": [
+            "unchecked_post_ids": [
                 "87079181"
             ]
         },
         "6592200": {
-            "checkedPostIds": [
+            "checked_post_ids": [
                 "87674607",
                 "87631415",
                 "87631403",
@@ -1681,10 +1681,10 @@
                 "12068284",
                 "12067671"
             ],
-            "uncheckedPostIds": []
+            "unchecked_post_ids": []
         },
         "6185029": {
-            "checkedPostIds": [
+            "checked_post_ids": [
                 "86917620",
                 "85328617",
                 "84949663",
@@ -1929,12 +1929,12 @@
                 "13583844",
                 "13183354"
             ],
-            "uncheckedPostIds": []
+            "unchecked_post_ids": []
         }
     },
     "Fanbox": {
         "16731": {
-            "checkedPostIds": [
+            "checked_post_ids": [
                 "6530470",
                 "6529842",
                 "6430447",
@@ -2172,7 +2172,7 @@
                 "72838",
                 "72706"
             ],
-            "uncheckedPostIds": []
+            "unchecked_post_ids": []
         }
     },
     "Discord": {},

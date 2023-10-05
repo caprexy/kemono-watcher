@@ -1,8 +1,11 @@
-from tkinter import *
-from inputPanel import inputView
-from checkerPanel import outputView
-from models import databaseModel
+"Main file to run application"
+
+from tkinter import Tk, PanedWindow, HORIZONTAL, BOTH, TRUE
 import logging
+
+from inputPanel import inputView
+from checkerPanel import output_view
+from models import databaseModel
 
 #enable disable logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -21,8 +24,6 @@ mainWindow.pack(fill=BOTH, expand=TRUE)
 
 # add said frames
 mainWindow.add(inputView.initalizeInputFrame(mainWindow, database), stretch="always")
-mainWindow.add(outputView.initalizeOutputFrame(mainWindow, database), stretch="always")
-
-
+mainWindow.add(output_view.initalize_output_frame(mainWindow, database), stretch="always")
 
 root.mainloop()
