@@ -10,6 +10,7 @@ from testing import testConstants
 from models.userModel import User
 import checkerPanel.output_controller as output_controller
 from checkerPanel.output_controller import get_unseen_post_ids_from_page
+# pylint: enable=C0413
 
 class OutputControllerTest(unittest.TestCase):
     """Test for the output controller. Should mock any external modules
@@ -30,7 +31,7 @@ class OutputControllerTest(unittest.TestCase):
         
         url_to_response_data = {
             request+"0": entire_first_page_bytes,
-            request+"50": b"[]"
+            request+"50": b"[]\n"
         }
 
         # returning a mock to handle the read call
@@ -40,7 +41,6 @@ class OutputControllerTest(unittest.TestCase):
 
             mock_response.__enter__.return_value = mock_response
             mock_response.__exit__.return_value = False
-
             mock_response.read.return_value = url_to_response_data.get(url)
 
             return mock_response
@@ -54,12 +54,23 @@ class OutputControllerTest(unittest.TestCase):
     
         new_unseen = get_unseen_post_ids_from_page(request+str(api_index),
                         known, unknown, unseen)
+        
+        # type checking
+        assert type(new_unseen) == list
+        assert type(new_unseen[0]) == int
+        
         all_posts = known + unknown + unseen + new_unseen
         all_posts.sort()
         all_posts.reverse()
 
         assert all_posts == testConstants.USER1_FIRST_PAGE_IDS
         assert len(known) + len(unknown) + len(unseen) + len(new_unseen) == 50
+
+        # testing the empty case
+        api_index += 50
+        new_unseen = get_unseen_post_ids_from_page(request+str(api_index),
+                known, unknown, unseen)
+        assert new_unseen == []
 
     @patch("models.databaseModel.Database")
     @patch("inputPanel.statusHelper.setGetUpdatesStatusLabelValues")
@@ -75,7 +86,7 @@ class OutputControllerTest(unittest.TestCase):
         # setup some extranous mocks that we may need
         output_controller.pass_vars(Mock(), mock_button, mock_database)
         update_user_data_mock = Mock()
-        mock_database.updateUserData = update_user_data_mock
+        mock_database.update_database_row_manual_input = update_user_data_mock
     
         # setup user1 data, seen/unseen/unknown variables
         user1_first_page = testConstants.USER1_FIRST_PAGE_IDS
@@ -107,7 +118,7 @@ class OutputControllerTest(unittest.TestCase):
             user2_known,
             user2_unknown,
         )
-        mock_database.getAllUsersObj.return_value = [user_obj_1, user_obj_2]
+        mock_database.get_all_user_obj.return_value = [user_obj_1, user_obj_2]
         
         # we mock the result of this function call and just return as if this function works
         def mock_get_unseen_post_ids_side_effect(request: string,
