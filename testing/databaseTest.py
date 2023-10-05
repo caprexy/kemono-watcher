@@ -19,10 +19,10 @@ class databaseTests(unittest.TestCase):
         cls.database = database.Database()
 
         # sample user data
-        cls.databaseId = 2
+        cls.databaseId = 72813
         cls.name = "na"
         cls.service = "Patreon"
-        cls.checkedPostIds = [84905474,84778099,84238287,83529449,83343026,83218897,83169653,83065295,82276738,82064413,81954654,81851518,81209841,81059547,80704628,80338946,80190808,79994633,78434719,77440488,76755887,75926672,75710038,75580104,75157411,75022239,74916213,74693973,74245334,74158934,73468219,73194386,72942785,72646675,72467685,72405353,72310762,72205399,72091429,72030404,72001916,71756991,71677434,71623437,71380943,71238640,71182880,71135747,71087979,71070581]
+        cls.checkedPostIds = [84905474, 84778099, 84238287, 83529449, 83343026, 83218897, 83169653, 83065295, 82276738, 82064413, 81954654, 81851518, 81209841, 81059547, 80704628, 80338946, 80190808, 79994633, 78434719, 77440488, 76755887, 75926672, 75710038, 75580104, 75157411, 75022239, 74916213, 74693973, 74245334, 74158934, 73468219, 73194386, 72942785, 72646675, 72467685, 72405353, 72310762, 72205399, 72091429, 72030404, 72001916, 71756991, 71677434, 71623437, 71380943, 71238640, 71182880, 71135747, 71087979, 71070581, 71062351, 70996043, 70943219, 70897713, 70853491, 70808920, 70769224, 70745940, 70716118, 70668831, 70668428, 70661972, 70605413, 70568003, 70527415, 70526592, 70489194, 70114372, 69844726, 69806320, 69437650, 69267254, 68972303, 68433820, 68341058, 68202290, 68113175, 68024574, 67908936, 67606882, 67436555, 67305910, 67104339, 66932176, 66803019, 66689004, 66646000, 66438173, 66382705, 66218736, 66063628, 65980003, 65911698, 65731008, 65424136, 65392885, 65214407, 64974747, 64968926, 64828106]
         cls.uncheckedPostIds = []
 
         cls.idTwo = 645
@@ -55,13 +55,15 @@ class databaseTests(unittest.TestCase):
     def side_effect_apiCall(self, url, *args, **kwargs):  # Accept extra arguments
         mock_res = MagicMock()
         if url.endswith("=0"):
-            with open(testConstants.apiSampleCallBytesLocation, 'rb') as file:
+            with open(testConstants.USER1_FIRST_PAGE, 'rb') as file:
                 sample_api_bytes = file.read()
             mock_res.read.return_value = sample_api_bytes
         elif url.endswith("50"):
-            mock_res.read.return_value = b'{}'
+            with open(testConstants.USER1_SECOND_PAGE, 'rb') as file:
+                sample_api_bytes = file.read()
+            mock_res.read.return_value = sample_api_bytes
         else:
-            raise ValueError("Unexpected url: " + url)
+            mock_res.read.return_value = b'{}'
         return mock_res
 
     def createTestUser(self, id):
@@ -85,7 +87,6 @@ class databaseTests(unittest.TestCase):
         
         res = self.database.getAllUsersObj()
         self.assertEqual(len(res),2)
-
         rowTupleResOne = res[0].getAsRowTuple()
         rowTupleTruth = (rowTupleResOne[0], #id value depends on which one was added first by multithreading, wholy unimportant
                       self.name, 
