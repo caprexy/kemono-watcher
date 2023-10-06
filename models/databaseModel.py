@@ -1,13 +1,16 @@
-import constants
+# Defines a database that runs on a sqlite database. Tested through database tests.
+#  Some hardcode can be found in the constants.
 import urllib.request
 import json
 import logging
 import sqlite3
 import threading
+from typing import List
+
+from inputPanel import statusHelper
+import constants
 
 from . import userModel
-from inputPanel import statusHelper
-from typing import List
 
 cursorList = []
 connectionList = []
@@ -56,14 +59,16 @@ class Database(object):
             self.thread_data.connection.close()
             self.thread_data.connection = None
 
-    def create_user(self, id: int, service: str, addButton, *staticCallbacks):
+    def create_user(self, id: int, service: str, add_button, *staticCallbacks):
         """Creates a user in the database, user data should closely follow user_obj
 
         Args:
             id (int): Id on kemono of the user
             service (str): Service for the id
-            addButton (Button): button to be enabled/disabled while this runs
+            add_button (Button): button to be enabled/disabled while this runs
         """
+        assert isinstance(id, int), "id must be a int"
+        assert service in constants.SERVICES, "service must be part of the defined services and capitalized properly"
         thread_connection, thread_cursor = self.get_connection_and_cursor()
         try:
             # get ids
@@ -75,7 +80,7 @@ class Database(object):
             statusHelper.setuserOperationStatusValues("Looking for posts",  "orange")
             contents = urllib.request.urlopen(request + str(i)).read()
             response = json.loads(contents.decode())
-            while(bool(response)): #keep running while contents exists
+            while bool(response): #keep running while contents exists
                 statusHelper.setuserOperationStatusValues("Got " +str(i)+" user posts and looking more",  "orange")
                 for obj in response:
                     known_id_list.append(int(obj["id"]))
@@ -93,7 +98,7 @@ class Database(object):
             data_to_insert = (None, "na", id, service, known_id_list_json, unknown_id_list_json)
             thread_cursor.execute(insert_query, data_to_insert)
             statusHelper.setuserOperationStatusValues("User is now in database, reclick to view",  "green")
-            addButton["state"] = "normal"
+            add_button["state"] = "normal"
             thread_connection.commit()
             
             for callback in staticCallbacks:
@@ -104,26 +109,31 @@ class Database(object):
         finally:
             self.close_thread_connections()
 
-    def update_database_row_user_object(self, user_obj:userModel.User):
+    def update_database_row_user_object(self, neew_user_obj:userModel.User):
         """Updates a database row using a user object's info
 
         Args:
             user_obj (userModel.User): User obj to insert
         """
-        logging.info("Updating user: %s", user_obj)
+        old_user_obj = self.get_user_from_database_id(neew_user_obj.database_id)
+        assert old_user_obj is not None, "Couldnt find a user with that id and service"
+        
+        logging.info("Updating user: %s", old_user_obj)
         connection, cursor = self.get_connection_and_cursor()
-        row_tuple = user_obj.get_as_row_tuple()
+        row_tuple = neew_user_obj.get_as_row_tuple()
         database_id = row_tuple[0]
 
         set_clause = ", ".join(f"{column} = ?" for column in constants.USER_TABLE_COL_NAMES[1:])
-        update_query = f"UPDATE {constants.USERS_TABLE_NAME} SET {set_clause} WHERE {constants.USER_TABLE_COL_NAMES[0]} = ?"
+        update_query = f"UPDATE {constants.USERS_TABLE_NAME} \
+                            SET {set_clause} \
+                            WHERE {constants.USER_TABLE_COL_NAMES[0]} = ?"
         values = row_tuple[1:] + (database_id,)
 
         cursor.execute(update_query, values)
         connection.commit()
 
     def update_database_row_manual_input(self, user_id: int, service: str, known_ids: List[int], unknown_ids:List[int]):
-        """Alternative way to update the database in the case we know minimal user info + new values to update
+        """Alternative way to update the database in the case we only have user id and service
 
         Args:
             user_id (int): _description_
@@ -135,6 +145,7 @@ class Database(object):
             ValueError: _description_
         """
         user_obj = self.get_user_obj(user_id,service)
+        assert user_obj is not None, "Couldnt find a user with that id and service"
         if user_obj is None:
             raise ValueError("Couldnt find a user object")
         user_obj.checked_post_ids = known_ids
@@ -150,7 +161,9 @@ class Database(object):
         """
         connection, cursor = self.get_connection_and_cursor()
         try:    
-            delete_query = f"DELETE FROM {constants.USERS_TABLE_NAME} WHERE {constants.USER_TABLE_COL_NAMES[2]} = ? AND {constants.USER_TABLE_COL_NAMES[3]} = ?"
+            delete_query = f"DELETE FROM {constants.USERS_TABLE_NAME} \
+                            WHERE {constants.USER_TABLE_COL_NAMES[2]} = ? \
+                            AND {constants.USER_TABLE_COL_NAMES[3]} = ?"
             cursor.execute(delete_query, (user_id, service))
             connection.commit()
             statusHelper.setuserOperationStatusValues("Deleted user", "green")
@@ -174,7 +187,9 @@ class Database(object):
         """
         connection, cursor = self.get_connection_and_cursor()
 
-        select_query = f"SELECT {constants.USER_TABLE_COL_NAMES[5]},{constants.USER_TABLE_COL_NAMES[3]},{constants.USER_TABLE_COL_NAMES[2]} FROM {constants.USERS_TABLE_NAME}"
+        select_query = f"\
+            SELECT {constants.USER_TABLE_COL_NAMES[5]},{constants.USER_TABLE_COL_NAMES[3]},{constants.USER_TABLE_COL_NAMES[2]} \
+            FROM {constants.USERS_TABLE_NAME}"
         cursor.execute(select_query)
         rows = cursor.fetchall()
 
@@ -209,7 +224,8 @@ class Database(object):
         """
         connection, cursor = self.get_connection_and_cursor()
 
-        select_query = f"SELECT * FROM {constants.USERS_TABLE_NAME} WHERE {constants.USER_TABLE_COL_NAMES[2]} = ? AND {constants.USER_TABLE_COL_NAMES[3]} = ?"
+        select_query = f"SELECT * FROM {constants.USERS_TABLE_NAME} \
+            WHERE {constants.USER_TABLE_COL_NAMES[2]} = ? AND {constants.USER_TABLE_COL_NAMES[3]} = ?"
         cursor.execute(select_query, (user_id, service))
 
         row = cursor.fetchone()
@@ -219,6 +235,28 @@ class Database(object):
 
         return userModel.convert_row_to_user(row)
 
+    def get_user_from_database_id(self, database_id:int)-> userModel.User:
+        """ Uses the id in particular since the id is an unshakeable reference
+
+        Args:
+            database_id (int): generated uniquely per database, no two userObj can have same databsae id
+
+        Returns:
+            userModel.User: the row as a user
+        """
+        connection, cursor = self.get_connection_and_cursor()
+
+        select_query = f"SELECT * FROM {constants.USERS_TABLE_NAME} \
+            WHERE {constants.USER_TABLE_COL_NAMES[0]} = ? "
+        cursor.execute(select_query, (str(database_id),))
+
+        row = cursor.fetchone()
+        # maybe more efficent way of checking if user exist
+        if row is None: 
+            return None
+
+        return userModel.convert_row_to_user(row)
+    
     def get_all_user_obj(self)->List[userModel.User]:
         """Gets all users in the form of a user model
 
@@ -246,7 +284,8 @@ class Database(object):
         """
         connection, cursor = self.get_connection_and_cursor()
 
-        select_query = f"SELECT {constants.USER_TABLE_COL_NAMES[2]}, {constants.USER_TABLE_COL_NAMES[3]} FROM {constants.USERS_TABLE_NAME}"
+        select_query = f"SELECT {constants.USER_TABLE_COL_NAMES[2]}, \
+            {constants.USER_TABLE_COL_NAMES[3]} FROM {constants.USERS_TABLE_NAME}"
         cursor.execute(select_query)
         rows = cursor.fetchall()
         
