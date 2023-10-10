@@ -73,7 +73,7 @@ class OutputControllerTest(unittest.TestCase):
         assert new_unseen == []
 
     @patch("models.databaseModel.Database")
-    @patch("inputPanel.statusHelper.setGetUpdatesStatusLabelValues")
+    @patch("inputPanel.statusHelper.set_get_updates_status_label_values")
     @patch("tkinter.Button")
     @patch('checkerPanel.output_controller.get_unseen_post_ids_from_page')
 

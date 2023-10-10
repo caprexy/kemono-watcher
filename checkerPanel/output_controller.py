@@ -6,7 +6,7 @@ from tkinter import StringVar, Button
 import string
 
 from models.databaseModel import Database
-from inputPanel import statusHelper
+from inputPanel import status_helper
 
 # pylint: disable=C0103
 new_posts_list_var = None
@@ -78,7 +78,7 @@ def get_unread_posts_thread():
     update_posts_button.config(state="disabled")
     unknown_posts = database.get_all_uknown_post_ids_and_service()
     new_posts_list_var.set(unknown_posts)
-    statusHelper.setGetUpdatesStatusLabelValues("Got database unknown posts!", "orange")
+    status_helper.set_get_updates_status_label_values("Got database unknown posts!", "orange")
 
     ## Fetch api, compare posts to find new posts, if neeeded update new_posts_list_var
     update_posts_button.config(state="normal")
@@ -87,7 +87,7 @@ def get_unread_posts_thread():
     for user in users:
         service = user.service
         user_id = user.id
-        statusHelper.setGetUpdatesStatusLabelValues(
+        status_helper.set_get_updates_status_label_values(
             "Getting posts from "+service+" for id:"+str(user_id), "orange")
         
         api_index=0
@@ -113,4 +113,4 @@ def get_unread_posts_thread():
     
     unknown_posts = database.get_all_uknown_post_ids_and_service()
     new_posts_list_var.set(unknown_posts)
-    statusHelper.setGetUpdatesStatusLabelValues("Finished getting posts from web", "green")
+    status_helper.set_get_updates_status_label_values("Finished getting posts from web", "green")

@@ -9,7 +9,7 @@ import json
 sys.path.append('../')
 
 import models.databaseModel as database
-from inputPanel import statusHelper
+from inputPanel import status_helper
 import constants
 
 class DatabaseTests(unittest.TestCase):
@@ -78,7 +78,7 @@ class DatabaseTests(unittest.TestCase):
                 button_mock
             )
 
-        with patch('inputPanel.statusHelper.setuserOperationStatusValues'), \
+        with patch('inputPanel.statusHelper.set_user_operation_status_values'), \
              patch('urllib.request.urlopen', side_effect=side_effect_api_call):
             
             print("Multithreading creation calls")
@@ -208,7 +208,7 @@ class DatabaseTests(unittest.TestCase):
             self.database.know_unknown_post(self.id_two, self.service, 5)
         assert self.database.get_user_obj(self.id_two, self.service).unchecked_post_ids == [3]
 
-    @patch('inputPanel.statusHelper.setuserOperationStatusValues')
+    @patch('inputPanel.statusHelper.set_user_operation_status_values')
     def test7_delete_user(self, patch_status_helper):
         """Tests deleting a user function
         """

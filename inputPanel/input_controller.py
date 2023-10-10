@@ -5,7 +5,7 @@ import webbrowser
 import logging
 
 from models.databaseModel import Database
-from . import statusHelper
+from . import status_helper
 
 # pylint: disable=C0103
 id_entry_ele = None
@@ -79,16 +79,16 @@ def add_user():
     logging.info("Trying to add a user")
 
     if len(user) == 0:
-        statusHelper.setuserOperationStatusValues("Missing Id!", "red")
+        status_helper.set_user_operation_status_values("Missing Id!", "red")
         add_button["state"] = "normal"
         return
     elif not user.isnumeric():
-        statusHelper.setuserOperationStatusValues("Non numeric id!", "red")
+        status_helper.set_user_operation_status_values("Non numeric id!", "red")
         add_button["state"] = "normal"
         return
     
     if database.does_user_exist(user, service):
-        statusHelper.setuserOperationStatusValues("User already exists!", "red")
+        status_helper.set_user_operation_status_values("User already exists!", "red")
         add_button["state"] = "normal"
     else:
         threading.Thread(target=database.create_user, args=(user, service, add_button, update_operation_panel)).start()
@@ -122,14 +122,14 @@ def view_user_info():
 
     user_obj = database.get_user_obj(user_id, service)
     if user_obj is None:
-        statusHelper.setuserOperationStatusValues("Couldnt find user!", "red")
+        status_helper.set_user_operation_status_values("Couldnt find user!", "red")
         return
     
     logging.info("Got user %s", str(user_obj))
     known_posts_list_var.set(user_obj.checked_post_ids)
     unknown_posts_list_var.set(user_obj.unchecked_post_ids)
     
-    statusHelper.setuserOperationStatusValues("Got user!", "green")
+    status_helper.set_user_operation_status_values("Got user!", "green")
 
 
 def delete_user():
@@ -138,7 +138,7 @@ def delete_user():
     user = id_entry_ele.get()
     service =  selected_service.get()
     if database.does_user_exist(user, service) == []:
-        statusHelper.setuserOperationStatusValues("Couldnt find user to delete", "orange")
+        status_helper.set_user_operation_status_values("Couldnt find user to delete", "orange")
     else:
         database.delete_user(user, service, clear_operation_panel)
 

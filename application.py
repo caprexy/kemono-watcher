@@ -3,7 +3,7 @@
 from tkinter import Tk, PanedWindow, HORIZONTAL, BOTH, TRUE
 import logging
 
-from inputPanel import inputView
+from inputPanel import input_view
 from checkerPanel import output_view
 from models import databaseModel
 
@@ -23,7 +23,7 @@ mainWindow = PanedWindow(root, orient=HORIZONTAL)
 mainWindow.pack(fill=BOTH, expand=TRUE)
 
 # add said frames
-mainWindow.add(inputView.initalizeInputFrame(mainWindow, database), stretch="always")
+mainWindow.add(input_view.initalize_input_frame(mainWindow, database), stretch="always")
 mainWindow.add(output_view.initalize_output_frame(mainWindow, database), stretch="always")
 
 root.mainloop()

@@ -2,7 +2,7 @@
 from tkinter import StringVar, Listbox, Button, Label, W, E, Frame
 import webbrowser
 
-from inputPanel import statusHelper
+from inputPanel import status_helper
 from . import output_controller
 
 # frame information
@@ -35,7 +35,7 @@ def build_frame():
 
     get_update_status = Label(output_frame, text="No updates gotten", bg = "Grey", wraplength=100)
     get_update_status.grid(row=frame_row, column=0)
-    statusHelper.setGetUpdatesStatusLabel(get_update_status)
+    status_helper.set_get_updates_status_label(get_update_status)
 
     frame_row += 1
     new_posts_list_var = StringVar(value=[])

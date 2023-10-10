@@ -7,7 +7,7 @@ import sqlite3
 import threading
 from typing import List
 
-from inputPanel import statusHelper
+from inputPanel import status_helper
 import constants
 
 from . import userModel
@@ -73,16 +73,16 @@ class Database(object):
         thread_connection, thread_cursor = self.get_connection_and_cursor()
         try:
             # get ids
-            statusHelper.setuserOperationStatusValues("Got 0 user posts", "orange")
+            status_helper.set_user_operation_status_values("Got 0 user posts", "orange")
 
             request = "https://kemono.party/api/" + service.lower() + "/user/" + str(id) + "?o="
             i = 0
             known_id_list = []
-            statusHelper.setuserOperationStatusValues("Looking for posts",  "orange")
+            status_helper.set_user_operation_status_values("Looking for posts",  "orange")
             contents = urllib.request.urlopen(request + str(i)).read()
             response = json.loads(contents.decode())
             while bool(response): #keep running while contents exists
-                statusHelper.setuserOperationStatusValues("Got " +str(i)+" user posts and looking more",  "orange")
+                status_helper.set_user_operation_status_values("Got " +str(i)+" user posts and looking more",  "orange")
                 for obj in response:
                     known_id_list.append(int(obj["id"]))
 
@@ -90,7 +90,7 @@ class Database(object):
                 contents = urllib.request.urlopen(request + str(i)).read()
                 response = json.loads(contents.decode())
 
-            statusHelper.setuserOperationStatusValues("Finished getting all posts",  "orange")
+            status_helper.set_user_operation_status_values("Finished getting all posts",  "orange")
 
             # actually write the new user and put it into the database
             known_id_list_json = json.dumps(known_id_list)
@@ -98,7 +98,7 @@ class Database(object):
             insert_query = f"INSERT INTO {constants.USERS_TABLE_NAME} VALUES (?, ?, ?, ?, ?, ?)"
             data_to_insert = (None, "na", id, service, known_id_list_json, unknown_id_list_json)
             thread_cursor.execute(insert_query, data_to_insert)
-            statusHelper.setuserOperationStatusValues("User is now in database, reclick to view",  "green")
+            status_helper.set_user_operation_status_values("User is now in database, reclick to view",  "green")
             add_button["state"] = "normal"
             thread_connection.commit()
             
@@ -170,13 +170,13 @@ class Database(object):
                             AND {constants.USER_TABLE_COL_NAMES[3]} = ?"
             cursor.execute(delete_query, (user_id, service))
             connection.commit()
-            statusHelper.setuserOperationStatusValues("Deleted user", "green")
+            status_helper.set_user_operation_status_values("Deleted user", "green")
 
             for callback in staticCallbacks:
                 callback()
         except Exception as error:
             logging.error("Failed to delete a user: %s", error)
-            statusHelper.setuserOperationStatusValues("Failed to delete user", "red")
+            status_helper.set_user_operation_status_values("Failed to delete user", "red")
             connection.rollback()
         finally:
             self.close_thread_connections()
