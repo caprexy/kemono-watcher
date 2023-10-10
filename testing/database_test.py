@@ -1,19 +1,22 @@
+"""Test file for database in models"""
 import unittest
 import sys
 import os
-from unittest.mock import patch, Mock, MagicMock
-import testConstants
+from unittest.mock import patch, MagicMock
 import threading
 import json
 
+
+# pylint: disable=C0411
+
 sys.path.append('../')
+from testing import test_constants
 
-import models.databaseModel as database
-from inputPanel import status_helper
+import models.database_model as database
 import constants
-
+      
 class DatabaseTests(unittest.TestCase):
-    """Is a standard unittest module for the database in the databaseModel module"""
+    """Is a standard unittest module for the database in the database_model module"""
         
     @classmethod
     def setUpClass(cls):
@@ -35,37 +38,17 @@ class DatabaseTests(unittest.TestCase):
         if os.path.exists(constants.DATABASE_FILENAME):
             os.remove(constants.DATABASE_FILENAME)
 
+        
     def test1_create_two_users(self):
         """Run a test to create two uses in parallel. 
             Wanted to be parallel since the primary UI thread cannot be frozen.
         """ 
         print("Creating 2 users")
 
-        def side_effect_api_call(url : str) -> bytes:
-            """A function to mock the api call. It takes in a url and returns a mock
-               that returns different bytes based on the url input
-
-            Args:
-                url str: input url
-
-            Returns:
-                bytes: output bytes based on what it theoretically should've
-            """
-            mock_res = MagicMock()
-            if url.endswith("=0"):
-                with open(testConstants.USER1_FIRST_PAGE, 'rb') as file:
-                    sample_api_bytes = file.read()
-                mock_res.read.return_value = sample_api_bytes
-            elif url.endswith("50"):
-                with open(testConstants.USER1_SECOND_PAGE, 'rb') as file:
-                    sample_api_bytes = file.read()
-                mock_res.read.return_value = sample_api_bytes
-            else:
-                mock_res.read.return_value = b'{}'
-            return mock_res
+        
         
         button_mock = MagicMock()
-        def create_test_user(id:int):
+        def create_test_user(user_id:int):
             """Function to be called for the threading
 
             Args:
@@ -73,14 +56,17 @@ class DatabaseTests(unittest.TestCase):
             """
 
             self.database.create_user(
-                id,
+                user_id,
                 self.service,
                 button_mock
             )
 
-        with patch('inputPanel.statusHelper.set_user_operation_status_values'), \
-             patch('urllib.request.urlopen', side_effect=side_effect_api_call):
+        with patch('input_panel.status_helper.set_user_operation_status_values'), \
+             patch('urllib.request.urlopen') as mock_urlopen:
             
+            # passing along the url to the PretendContext
+            mock_urlopen.side_effect = lambda url: PretendContext(url)
+
             print("Multithreading creation calls")
             thread_1 = threading.Thread(target=create_test_user, args=(self.id_one,))
 
@@ -93,7 +79,7 @@ class DatabaseTests(unittest.TestCase):
             print("Joined, both users created")
             
             print("Testing malformed inputs")
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 self.database.create_user("id","Pateron", button_mock)
             with self.assertRaises(AssertionError):
                 self.database.create_user(5,"service", button_mock)
@@ -208,7 +194,7 @@ class DatabaseTests(unittest.TestCase):
             self.database.know_unknown_post(self.id_two, self.service, 5)
         assert self.database.get_user_obj(self.id_two, self.service).unchecked_post_ids == [3]
 
-    @patch('inputPanel.statusHelper.set_user_operation_status_values')
+    @patch('input_panel.status_helper.set_user_operation_status_values')
     def test7_delete_user(self, patch_status_helper):
         """Tests deleting a user function
         """
@@ -217,6 +203,37 @@ class DatabaseTests(unittest.TestCase):
         assert self.database.get_user_obj(self.id_one, self.service) is None
     
 
+class PretendContext:
+    """This is a fake context manager for urlopen, thus we can control what the result of 
+       read is 
+    """
+    def __init__(self, url):
+        self.url = url
+        
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
+    def read(self) -> bytes:
+        """A function to mock the api call. It takes in a url and returns different
+        bytes based on the input url. 
+
+        Returns:
+            bytes: output bytes based on what it theoretically should've
+        """
+        if self.url.endswith("=0"):
+            with open(test_constants.USER1_FIRST_PAGE, 'rb') as file:
+                sample_api_bytes = file.read()
+                return sample_api_bytes
+        elif self.url.endswith("50"):
+            with open(test_constants.USER1_SECOND_PAGE, 'rb') as file:
+                sample_api_bytes = file.read()
+                return sample_api_bytes
+        else:
+            return b'{}'
+  
 if __name__ == '__main__':
 
     unittest.main()

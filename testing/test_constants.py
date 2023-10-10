@@ -1,17 +1,17 @@
 "Constants for testing"
 import json
 
-def generate_post_ids_from_bin(binFile : str)-> list[str]:
+def generate_post_ids_from_bin(bin_file : str)-> list[str]:
     """This reads a bin file/basically json, and turns it into a sequence of ids
 
     Args:
-        binFile (str): The output of Kemono's api
+        bin_file (str): The output of Kemono's api
 
     Returns:
         list[int]: the ids to be used
     """
     id_list = []
-    with open(binFile, 'rb') as contents:
+    with open(bin_file, 'rb') as contents:
         res = json.loads(contents.read().decode())
         for obj in res:
             id_list.append(int(obj["id"]))

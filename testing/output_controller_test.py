@@ -6,10 +6,10 @@ import string
 
 sys.path.append('../')
 # pylint: disable=C0413
-from testing import testConstants
-from models.userModel import User
-import checkerPanel.output_controller as output_controller
-from checkerPanel.output_controller import get_unseen_post_ids_from_page
+from models.user_model import User
+from output_panel import output_controller
+from output_panel.output_controller import get_unseen_post_ids_from_page
+from testing import test_constants
 # pylint: enable=C0413
 
 class OutputControllerTest(unittest.TestCase):
@@ -23,10 +23,10 @@ class OutputControllerTest(unittest.TestCase):
             We recreate situation where we check the first page and the user only has some checked ids
         """
         print("Testing if we can process an api call and get new ones")
-        request = "https://kemono.party/api/" + testConstants.USER1_SERVICE + \
-                    "/user/" + str(testConstants.USER1_ID) + "?o="
+        request = "https://kemono.party/api/" + test_constants.USER1_SERVICE + \
+                    "/user/" + str(test_constants.USER1_ID) + "?o="
 
-        with open(testConstants.USER1_FIRST_PAGE, 'rb') as file:
+        with open(test_constants.USER1_FIRST_PAGE, 'rb') as file:
             entire_first_page_bytes = file.read()
         
         url_to_response_data = {
@@ -48,34 +48,34 @@ class OutputControllerTest(unittest.TestCase):
 
         api_index = 0
         # Using second half of the first page bc logically unseen content is probably new
-        known = testConstants.USER1_SECOND_HALF_POST_IDS[3:5]
-        unknown = testConstants.USER1_SECOND_HALF_POST_IDS[5:]
-        unseen = testConstants.USER1_SECOND_HALF_POST_IDS[:3]
+        known = test_constants.USER1_SECOND_HALF_POST_IDS[3:5]
+        unknown = test_constants.USER1_SECOND_HALF_POST_IDS[5:]
+        unseen = test_constants.USER1_SECOND_HALF_POST_IDS[:3]
     
         new_unseen = get_unseen_post_ids_from_page(request+str(api_index),
                         known, unknown, unseen)
         
         # type checking
-        assert type(new_unseen) == list
-        assert type(new_unseen[0]) == int
+        assert isinstance(new_unseen, list)
+        assert isinstance(new_unseen[0], int)
         
         all_posts = known + unknown + unseen + new_unseen
         all_posts.sort()
         all_posts.reverse()
 
-        assert all_posts == testConstants.USER1_FIRST_PAGE_IDS
+        assert all_posts == test_constants.USER1_FIRST_PAGE_IDS
         assert len(known) + len(unknown) + len(unseen) + len(new_unseen) == 50
 
         # testing the empty case
         api_index += 50
         new_unseen = get_unseen_post_ids_from_page(request+str(api_index),
                 known, unknown, unseen)
-        assert new_unseen == []
+        assert not new_unseen
 
-    @patch("models.databaseModel.Database")
-    @patch("inputPanel.statusHelper.set_get_updates_status_label_values")
+    @patch("models.database_model.Database")
+    @patch("input_panel.status_helper.set_get_updates_status_label_values")
     @patch("tkinter.Button")
-    @patch('checkerPanel.output_controller.get_unseen_post_ids_from_page')
+    @patch('output_panel.output_controller.get_unseen_post_ids_from_page')
 
     def test2_get_unseen_posts_thread(self, 
             mock_get_unseen_post_ids, 
@@ -91,32 +91,32 @@ class OutputControllerTest(unittest.TestCase):
         mock_database.update_database_row_manual_input = update_user_data_mock
     
         # setup user1 data, seen/unseen/unknown variables
-        user1_first_page = testConstants.USER1_FIRST_PAGE_IDS
+        user1_first_page = test_constants.USER1_FIRST_PAGE_IDS
         user1_first_page_unseen = [user1_first_page.pop(3)]
-        user1_second_page = testConstants.USER1_SECOND_PAGE_IDS
+        user1_second_page = test_constants.USER1_SECOND_PAGE_IDS
         user1_second_page_unseen = [user1_second_page.pop(3)]
         
         user1_known = user1_first_page[5:] + user1_second_page[5:]
         user1_unknown = user1_first_page[:5] + user1_second_page[:5]
         user_obj_1 = User(
             1,
-            testConstants.USER1_NAME,
-            testConstants.USER1_ID,
-            testConstants.USER1_SERVICE,
+            test_constants.USER1_NAME,
+            test_constants.USER1_ID,
+            test_constants.USER1_SERVICE,
             user1_known,
             user1_unknown,
         )
 
-        user2_first_page = testConstants.USER2_FIRST_PAGE_IDS
+        user2_first_page = test_constants.USER2_FIRST_PAGE_IDS
         user2_first_page_unseen = [user2_first_page.pop(3)]
 
         user2_known = user2_first_page[:5]
         user2_unknown = user2_first_page[5:]
         user_obj_2 = User(
             1,
-            testConstants.USER2_NAME,
-            testConstants.USER2_ID,
-            testConstants.USER2_SERVICE,
+            test_constants.USER2_NAME,
+            test_constants.USER2_ID,
+            test_constants.USER2_SERVICE,
             user2_known,
             user2_unknown,
         )
@@ -127,17 +127,16 @@ class OutputControllerTest(unittest.TestCase):
                             known_ids: list,
                             unknown_ids: list,
                             unseen_ids: list):
-            if request == "https://kemono.party/api/" + testConstants.USER1_SERVICE + \
-                    "/user/" + str(testConstants.USER1_ID) + "?o=0":
+            if request == "https://kemono.party/api/" + test_constants.USER1_SERVICE + \
+                    "/user/" + str(test_constants.USER1_ID) + "?o=0":
                 return user1_first_page_unseen
-            elif request == "https://kemono.party/api/" + testConstants.USER1_SERVICE + \
-                    "/user/" + str(testConstants.USER1_ID) + "?o=50":
+            if request == "https://kemono.party/api/" + test_constants.USER1_SERVICE + \
+                    "/user/" + str(test_constants.USER1_ID) + "?o=50":
                 return user1_second_page_unseen
-            elif request == "https://kemono.party/api/" + testConstants.USER2_SERVICE + \
-                    "/user/" + str(testConstants.USER2_ID) + "?o=0":
+            if request == "https://kemono.party/api/" + test_constants.USER2_SERVICE + \
+                    "/user/" + str(test_constants.USER2_ID) + "?o=0":
                 return user2_first_page_unseen
-            else:
-                return []
+            return []
         mock_get_unseen_post_ids.side_effect = mock_get_unseen_post_ids_side_effect
         
         output_controller.get_unread_posts_thread()
@@ -148,12 +147,12 @@ class OutputControllerTest(unittest.TestCase):
         user_2_sorted_unknown.sort()
 
         expected_calls = [
-                (testConstants.USER1_ID,
-                    testConstants.USER1_SERVICE,
+                (test_constants.USER1_ID,
+                    test_constants.USER1_SERVICE,
                     user1_known,
                     user_1_sorted_unknown),
-                (testConstants.USER2_ID,
-                    testConstants.USER2_SERVICE,
+                (test_constants.USER2_ID,
+                    test_constants.USER2_SERVICE,
                     user2_known,
                     user_2_sorted_unknown)
             ]

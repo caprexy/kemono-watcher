@@ -5,7 +5,7 @@ import json
 
 sys.path.append('../')
 
-import models.userModel as userModel
+from models import user_model
 
 #python -m unittest userTest.py
 class UserTests(unittest.TestCase):
@@ -25,7 +25,12 @@ class UserTests(unittest.TestCase):
         self.checked_post_ids = [1,5,4,6,75]
         self.unchecked_post_ids = [2,3,7,99]
 
-        self.user = userModel.User(self.database_id, self.name, self.id, self.service, self.checked_post_ids, self.unchecked_post_ids)
+        self.user = user_model.User(self.database_id, 
+            self.name, 
+            self.id, 
+            self.service, 
+            self.checked_post_ids, 
+            self.unchecked_post_ids)
 
         self.assertEqual(self.user.database_id, self.database_id)
         self.assertEqual(self.user.name, self.name)
@@ -48,8 +53,8 @@ class UserTests(unittest.TestCase):
         """Depends on test1 being accurate since it uses get_as_row_tuple function
         """
         tuple_results = self.user.get_as_row_tuple()
-        user_result = userModel.convert_row_to_user(tuple_results)
+        user_result = user_model.convert_row_to_user(tuple_results)
         
-        assert isinstance(self.user, userModel.User)
+        assert isinstance(self.user, user_model.User)
         self.assertEqual(self.user.database_id, user_result.database_id)
         self.assertEqual(self.user.name, user_result.name)
