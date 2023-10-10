@@ -3,9 +3,9 @@
 from tkinter import Tk, PanedWindow, HORIZONTAL, BOTH, TRUE
 import logging
 
-from inputPanel import input_view
-from checkerPanel import output_view
-from models import databaseModel
+from input_panel import input_view
+from output_panel import output_view
+from models import database_model
 
 #enable disable logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # setup god window
 root = Tk()
 
-database = databaseModel.Database()
+database = database_model.Database()
 
 # setting up root geometry
 root.geometry("1000x900")

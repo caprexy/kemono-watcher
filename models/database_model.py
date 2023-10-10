@@ -1,5 +1,5 @@
-# Defines a database that runs on a sqlite database. Tested through database tests.
-#  Some hardcode can be found in the constants.
+""" Defines a database that runs on a sqlite database. Tested through database tests.
+ Some hardcode can be found in the constants."""
 import urllib.request
 import json
 import logging
@@ -7,22 +7,22 @@ import sqlite3
 import threading
 from typing import List
 
-from inputPanel import status_helper
+from input_panel import status_helper
 import constants
 
-from . import userModel
+from . import user_model
 
 cursorList = []
 connectionList = []
 
-class Database(object):
+class Database():
     """ Model of a database backed by a sqlite database"""
     def __init__(self):
         logging.info("Creating new database object")
         # gathering cursors and connections to be closed later on
         self.thread_data = threading.local()
 
-        connection, cursor = self.get_connection_and_cursor()
+        _, cursor = self.get_connection_and_cursor()
         cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{constants.USERS_TABLE_NAME}'")
         existing_table = cursor.fetchone()
 
@@ -59,36 +59,38 @@ class Database(object):
             self.thread_data.connection.close()
             self.thread_data.connection = None
 
-    def create_user(self, id: int, service: str, add_button, *staticCallbacks):
+    def create_user(self, user_id: int, service: str, add_button, *staticCallbacks):
         """Creates a user in the database, user data should closely follow user_obj
 
         Args:
-            id (int): Id on kemono of the user
-            service (str): Service for the id
+            user_id (int): user_id on kemono of the user
+            service (str): Service for the user_id
             add_button (Button): button to be enabled/disabled while this runs
         """
-        if not isinstance(id, int):
-            id = int(id)
+        if not isinstance(user_id, int) and user_id.isdigit():
+            user_id = int(user_id)
+        elif not isinstance(user_id, int):
+            raise ValueError("id couldnt be made into an int")
         assert service in constants.SERVICES, "service must be part of the defined services and capitalized properly"
         thread_connection, thread_cursor = self.get_connection_and_cursor()
         try:
             # get ids
             status_helper.set_user_operation_status_values("Got 0 user posts", "orange")
 
-            request = "https://kemono.party/api/" + service.lower() + "/user/" + str(id) + "?o="
+            request = "https://kemono.party/api/" + service.lower() + "/user/" + str(user_id) + "?o="
             i = 0
             known_id_list = []
             status_helper.set_user_operation_status_values("Looking for posts",  "orange")
-            contents = urllib.request.urlopen(request + str(i)).read()
-            response = json.loads(contents.decode())
+            with urllib.request.urlopen(request + str(i)) as contents:
+                response = json.loads(contents.read().decode())
             while bool(response): #keep running while contents exists
                 status_helper.set_user_operation_status_values("Got " +str(i)+" user posts and looking more",  "orange")
                 for obj in response:
                     known_id_list.append(int(obj["id"]))
 
                 i += 50
-                contents = urllib.request.urlopen(request + str(i)).read()
-                response = json.loads(contents.decode())
+                with urllib.request.urlopen(request + str(i)) as contents:
+                    response = json.loads(contents.read().decode())
 
             status_helper.set_user_operation_status_values("Finished getting all posts",  "orange")
 
@@ -96,7 +98,7 @@ class Database(object):
             known_id_list_json = json.dumps(known_id_list)
             unknown_id_list_json = json.dumps([])
             insert_query = f"INSERT INTO {constants.USERS_TABLE_NAME} VALUES (?, ?, ?, ?, ?, ?)"
-            data_to_insert = (None, "na", id, service, known_id_list_json, unknown_id_list_json)
+            data_to_insert = (None, "na", user_id, service, known_id_list_json, unknown_id_list_json)
             thread_cursor.execute(insert_query, data_to_insert)
             status_helper.set_user_operation_status_values("User is now in database, reclick to view",  "green")
             add_button["state"] = "normal"
@@ -110,11 +112,11 @@ class Database(object):
         finally:
             self.close_thread_connections()
 
-    def update_database_row_user_object(self, neew_user_obj:userModel.User):
+    def update_database_row_user_object(self, neew_user_obj:user_model.User):
         """Updates a database row using a user object's info
 
         Args:
-            user_obj (userModel.User): User obj to insert
+            user_obj (user_model.User): User obj to insert
         """
         old_user_obj = self.get_user_from_database_id(neew_user_obj.database_id)
         assert old_user_obj is not None, "Couldnt find a user with that id and service"
@@ -189,7 +191,7 @@ class Database(object):
         Returns:
             list[str]: is a list of strings where the string is in the format "post id, service, id"
         """
-        connection, cursor = self.get_connection_and_cursor()
+        _, cursor = self.get_connection_and_cursor()
 
         select_query = f"\
             SELECT {constants.USER_TABLE_COL_NAMES[5]},{constants.USER_TABLE_COL_NAMES[3]},{constants.USER_TABLE_COL_NAMES[2]} \
@@ -216,7 +218,7 @@ class Database(object):
         """
         return bool(self.get_user_obj(user_id, service))
     
-    def get_user_obj(self, user_id: int, service: str)->userModel.User:
+    def get_user_obj(self, user_id: int, service: str)->user_model.User:
         """gets the user object from id + service
 
         Args:
@@ -224,9 +226,9 @@ class Database(object):
             service (str): user service
 
         Returns:
-            userModel.User: user object
+            user_model.User: user object
         """
-        connection, cursor = self.get_connection_and_cursor()
+        _, cursor = self.get_connection_and_cursor()
 
         try:
             user_id = int(user_id)
@@ -246,18 +248,18 @@ class Database(object):
         if row is None: 
             return None
 
-        return userModel.convert_row_to_user(row)
+        return user_model.convert_row_to_user(row)
 
-    def get_user_from_database_id(self, database_id:int)-> userModel.User:
+    def get_user_from_database_id(self, database_id:int)-> user_model.User:
         """ Uses the id in particular since the id is an unshakeable reference
 
         Args:
             database_id (int): generated uniquely per database, no two userObj can have same databsae id
 
         Returns:
-            userModel.User: the row as a user
+            user_model.User: the row as a user
         """
-        connection, cursor = self.get_connection_and_cursor()
+        _, cursor = self.get_connection_and_cursor()
 
         select_query = f"SELECT * FROM {constants.USERS_TABLE_NAME} \
             WHERE {constants.USER_TABLE_COL_NAMES[0]} = ? "
@@ -268,15 +270,15 @@ class Database(object):
         if row is None: 
             return None
 
-        return userModel.convert_row_to_user(row)
+        return user_model.convert_row_to_user(row)
     
-    def get_all_user_obj(self)->List[userModel.User]:
+    def get_all_user_obj(self)->List[user_model.User]:
         """Gets all users in the form of a user model
 
         Returns:
-            List[userModel.User]: contains all user objects registered
+            List[user_model.User]: contains all user objects registered
         """
-        connection, cursor = self.get_connection_and_cursor()
+        _, cursor = self.get_connection_and_cursor()
         select_query = f"SELECT * FROM {constants.USERS_TABLE_NAME}"
         cursor.execute(select_query)
 
@@ -285,7 +287,7 @@ class Database(object):
 
         users = []
         for row in rows:
-            users.append(userModel.convert_row_to_user(row))
+            users.append(user_model.convert_row_to_user(row))
         
         return users
     
@@ -295,7 +297,7 @@ class Database(object):
         Returns:
             list[tuple]: per tuple, ele 0 is id, ele 1 is website
         """
-        connection, cursor = self.get_connection_and_cursor()
+        _, cursor = self.get_connection_and_cursor()
 
         select_query = f"SELECT {constants.USER_TABLE_COL_NAMES[2]}, \
             {constants.USER_TABLE_COL_NAMES[3]} FROM {constants.USERS_TABLE_NAME}"

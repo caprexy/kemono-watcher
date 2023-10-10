@@ -4,7 +4,7 @@ import tkinter
 import webbrowser
 import logging
 
-from models.databaseModel import Database
+from models.database_model import Database
 from . import status_helper
 
 # pylint: disable=C0103
@@ -71,7 +71,6 @@ def set_display_users(known_user_list_var_in, known_user_list_box_in):
 def add_user():
     """Adds a user and handles all UI changes required to do so
     """
-    global add_button
     add_button["state"] = "disabled"
     user = id_entry_ele.get()
     service =  selected_service.get()
@@ -82,7 +81,7 @@ def add_user():
         status_helper.set_user_operation_status_values("Missing Id!", "red")
         add_button["state"] = "normal"
         return
-    elif not user.isnumeric():
+    if not user.isnumeric():
         status_helper.set_user_operation_status_values("Non numeric id!", "red")
         add_button["state"] = "normal"
         return
@@ -148,15 +147,15 @@ def get_selected_users():
     if known_user_list_box.curselection() is ():
         return
     
-    users = format_strvar_to_strlist(known_user_list_var)
+    users = format_str_var_to_strlist(known_user_list_var)
     
-    selectedVal = users[known_user_list_box.curselection()[0]]
+    selected_val = users[known_user_list_box.curselection()[0]]
 
-    service, selectedUser = selectedVal.split(":")
+    service, selected_user = selected_val.split(":")
 
     selected_service.set(service)
     id_entry_ele.delete(0, tkinter.END)
-    id_entry_ele.insert(0, selectedUser)
+    id_entry_ele.insert(0, selected_user)
     view_user_info()
 
 def update_known_list():
@@ -177,18 +176,18 @@ def open_user_page():
         return
     webbrowser.open("https://kemono.party/"+service.lower()+"/user/"+user)
 
-def format_strvar_to_strlist(strVar)->list[str]:
+def format_str_var_to_strlist(str_var)->list[str]:
     """Utility function to handle the stringVar from tk and convert into list
 
     Args:
-        strVar (_type_): tk's stringvar
+        str_var (_type_): tk's stringvar
 
     Returns:
         list[str]: list of str
     """
     new_list = []
-    if len( strVar.get()) != 0:
-        new_list = strVar.get()[1:-1].replace('\'','').replace(' ','').split(",")
+    if len( str_var.get()) != 0:
+        new_list = str_var.get()[1:-1].replace('\'','').replace(' ','').split(",")
         if new_list[-1] == '': 
             new_list.pop()
     return new_list
@@ -231,9 +230,9 @@ def move_from_a_to_b(a: list, b: list, a_selections: tuple):
     for selected_index in a_selections:
         selected_ids.append(a[selected_index])
 
-    for id in selected_ids:
-        b.append(id)
-        a.remove(id)
+    for some_id in selected_ids:
+        b.append(some_id)
+        a.remove(some_id)
 
     a.sort()
     a.reverse()
@@ -252,8 +251,8 @@ def get_known_and_unknown_lists():
     known_list = []
     unknown_list = []
 
-    known_list = format_strvar_to_strlist(known_posts_list_var)
-    unknown_list = format_strvar_to_strlist(unknown_posts_list_var)
+    known_list = format_str_var_to_strlist(known_posts_list_var)
+    unknown_list = format_str_var_to_strlist(unknown_posts_list_var)
 
     return known_list, unknown_list
 

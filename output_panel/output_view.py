@@ -2,7 +2,7 @@
 from tkinter import StringVar, Listbox, Button, Label, W, E, Frame
 import webbrowser
 
-from inputPanel import status_helper
+from input_panel import status_helper
 from . import output_controller
 
 # frame information

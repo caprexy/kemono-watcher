@@ -1,6 +1,7 @@
 [MASTER]
 # Specify the maximum number of characters per line (default: 100)
 max-line-length = 120
+init-hook='import sys; sys.path.append("."); sys.path.append('../')'
 
 [MESSAGES CONTROL]
 # Enable or disable specific messages or message categories

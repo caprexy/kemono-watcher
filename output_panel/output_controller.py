@@ -5,8 +5,8 @@ import json
 from tkinter import StringVar, Button
 import string
 
-from models.databaseModel import Database
-from inputPanel import status_helper
+from models.database_model import Database
+from input_panel import status_helper
 
 # pylint: disable=C0103
 new_posts_list_var = None
