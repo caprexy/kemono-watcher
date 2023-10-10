@@ -22,7 +22,7 @@ class OutputControllerTest(unittest.TestCase):
             and also mocking the api call returns.
             We recreate situation where we check the first page and the user only has some checked ids
         """
-
+        print("Testing if we can process an api call and get new ones")
         request = "https://kemono.party/api/" + testConstants.USER1_SERVICE + \
                     "/user/" + str(testConstants.USER1_ID) + "?o="
 
@@ -76,6 +76,7 @@ class OutputControllerTest(unittest.TestCase):
     @patch("inputPanel.statusHelper.setGetUpdatesStatusLabelValues")
     @patch("tkinter.Button")
     @patch('checkerPanel.output_controller.get_unseen_post_ids_from_page')
+
     def test2_get_unseen_posts_thread(self, 
             mock_get_unseen_post_ids, 
             mock_button, 
@@ -83,6 +84,7 @@ class OutputControllerTest(unittest.TestCase):
             mock_database):
         """ Mocks the unseen posts, need to mock tons of external variable calls
         """
+        print("Testing getting unseen post ids through database and api calls")
         # setup some extranous mocks that we may need
         output_controller.pass_vars(Mock(), mock_button, mock_database)
         update_user_data_mock = Mock()

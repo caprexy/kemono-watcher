@@ -31,9 +31,6 @@ USER1_SECOND_HALF_FIRST_PAGE = "shen_post_api_page_one_second_half.json"
 USER1_FIRST_HALF_POST_IDS = generate_post_ids_from_bin(USER1_FIRST_HALF_FIRST_PAGE)
 USER1_SECOND_HALF_POST_IDS = generate_post_ids_from_bin(USER1_SECOND_HALF_FIRST_PAGE)
 
-
-
-
 # user 2
 # https://kemono.party/patreon/user/9210140
 USER2_NAME = "Liliuhms"

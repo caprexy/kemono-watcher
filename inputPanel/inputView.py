@@ -21,7 +21,7 @@ idEntryElement = None
 viewAddIdStatusLabel = None
 
 # operation options
-options = constants.WEBSITES
+options = constants.SERVICES
 
 def initalizeInputFrame(rootIn, database):
     global inputFrame, parentFrame
@@ -80,25 +80,25 @@ def enterServiceAndIdRow(frameRow):
     idEntryElement.insert(0,"71308758")
     idEntryElement.grid(row=frameRow, column=2)
 
-    inputController.setServiceAndUserId(selectedServiceVar, idEntryElement)
+    inputController.set_service_and_user_id_ele(selectedServiceVar, idEntryElement)
 
 def viewAddIdRow(frameRow):
     global viewAddIdStatusLabel
-    addButton = Button(inputFrame, text = "Add id to subscriptions", command = inputController.addUser)
+    addButton = Button(inputFrame, text = "Add id to subscriptions", command = inputController.add_user)
     addButton.grid( row = frameRow, column=1, pady= 10, sticky= W + E)
     addButton.configure(width=10, height=2)    
 
     userOperationStatusLabel = Label(inputFrame, text="")
     userOperationStatusLabel.grid(row=frameRow, column=2)
     statusHelper.setUserOperationStatusLabel(userOperationStatusLabel)
-    inputController.setAddButton(addButton)
+    inputController.set_add_button(addButton)
 
 def delete_userRow(frameRow):
     delete_userButton = Button(inputFrame, text = "Delete user", command = inputController.delete_user, bg = "red")
     delete_userButton.grid( row = frameRow, column=0, pady= 10, sticky= W + E)
     delete_userButton.configure(width=10, height=2)
 
-    openUserButton = Button(inputFrame, text = "Open user page", command = inputController.openUserPage)
+    openUserButton = Button(inputFrame, text = "Open user page", command = inputController.open_user_page)
     openUserButton.grid( row = frameRow, column=2, pady= 10, sticky= W + E)
     openUserButton.configure(width=10, height=2)
 
@@ -117,11 +117,11 @@ def knownPostsRow(frameRow):
     knownPostsListbox.configure(width=10, height=2)
     inputFrame.grid_rowconfigure(frameRow, minsize=200)
 
-    moveKnownToUnknownButton = Button(inputFrame, text = "Move known post to unknown", command= inputController.moveKnownToUnknown)
-    moveKnownToUnknownButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
-    moveKnownToUnknownButton.configure(width=10, height=2)
+    move_from_known_to_unknownButton = Button(inputFrame, text = "Move known post to unknown", command= inputController.move_from_known_to_unknown)
+    move_from_known_to_unknownButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
+    move_from_known_to_unknownButton.configure(width=10, height=2)
 
-    inputController.setKnownPostVarList(knownPostsListVar, knownPostsListbox)
+    inputController.set_known_post_var_list(knownPostsListVar, knownPostsListbox)
 
 def unknownPostsRow(frameRow):
     
@@ -134,11 +134,11 @@ def unknownPostsRow(frameRow):
     unknownPostsListbox.configure(width=10, height=2)
     inputFrame.grid_rowconfigure(frameRow, minsize=200)
     
-    moveUnknownToKnownButton = Button(inputFrame, text = "Move unknown post to known", command= inputController.moveUnknownToKnown)
-    moveUnknownToKnownButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
-    moveUnknownToKnownButton.configure(width=10, height=2)
+    move_from_unknown_to_knownButton = Button(inputFrame, text = "Move unknown post to known", command= inputController.move_from_unknown_to_known)
+    move_from_unknown_to_knownButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
+    move_from_unknown_to_knownButton.configure(width=10, height=2)
 
-    inputController.setUnknownPostVarList(unknownPostsListVar, unknownPostsListbox)
+    inputController.set_unknown_post_var_list(unknownPostsListVar, unknownPostsListbox)
 
 
 def displayUsers(frameRow):
@@ -151,8 +151,8 @@ def displayUsers(frameRow):
     knownUsersListbox.configure(width=10, height=1)
     inputFrame.grid_rowconfigure(frameRow, minsize=100)
 
-    getSelectedUserButton = Button(inputFrame, text = "Get selected user", command= inputController.getSelectedUsers)
+    getSelectedUserButton = Button(inputFrame, text = "Get selected user", command= inputController.get_selected_users)
     getSelectedUserButton.grid( row= frameRow, column=2, pady= 10, sticky= W + E)
     getSelectedUserButton.configure(width=10, height=2)
 
-    inputController.setDisplayUsers(knownUsersListVar, knownUsersListbox)
+    inputController.set_display_users(knownUsersListVar, knownUsersListbox)

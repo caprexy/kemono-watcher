@@ -180,6 +180,7 @@ class DatabaseTests(unittest.TestCase):
     def test5_get_all_unknown_posts(self):
         """Testing specific get all unkown posts function and services
         """
+        print("Testing getting all unknown posts")
         self.database.update_database_row_manual_input(self.id_two, self.service, [1], [2,3,4])
         self.database.update_database_row_manual_input(self.id_one, self.service, [3], [1,3,5])
 
@@ -189,7 +190,6 @@ class DatabaseTests(unittest.TestCase):
             post[0] = int(post[0])
             post[2] = int(post[2])
             
-            print(self.service == post[1])
             assert post[0] in [1,2,3,4,5], "Misread the unknown posts somehow?"
             assert post[1] == self.service, "Wrong service"
             assert post[2] in [self.id_one, self.id_two]

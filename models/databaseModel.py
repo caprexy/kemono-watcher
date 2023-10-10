@@ -67,7 +67,8 @@ class Database(object):
             service (str): Service for the id
             add_button (Button): button to be enabled/disabled while this runs
         """
-        assert isinstance(id, int), "id must be a int"
+        if not isinstance(id, int):
+            id = int(id)
         assert service in constants.SERVICES, "service must be part of the defined services and capitalized properly"
         thread_connection, thread_cursor = self.get_connection_and_cursor()
         try:
@@ -160,6 +161,9 @@ class Database(object):
             service (str): service of user
         """
         connection, cursor = self.get_connection_and_cursor()
+        if not self.does_user_exist(user_id, service):
+            logging.error("Trying to delete an invalid user")
+
         try:    
             delete_query = f"DELETE FROM {constants.USERS_TABLE_NAME} \
                             WHERE {constants.USER_TABLE_COL_NAMES[2]} = ? \
@@ -224,6 +228,15 @@ class Database(object):
         """
         connection, cursor = self.get_connection_and_cursor()
 
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            logging.error("Couldnt convert input id into int")
+            return None
+        if service not in constants.SERVICES:
+            logging.error("Service input wasnt recognized")
+            return None
+        
         select_query = f"SELECT * FROM {constants.USERS_TABLE_NAME} \
             WHERE {constants.USER_TABLE_COL_NAMES[2]} = ? AND {constants.USER_TABLE_COL_NAMES[3]} = ?"
         cursor.execute(select_query, (user_id, service))
