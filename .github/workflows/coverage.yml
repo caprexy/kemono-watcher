@@ -1,6 +1,6 @@
 # .github/workflows/ci.yml
 # https://github.com/marketplace/actions/python-coverage-comment?version=v3.14
-name: CI
+name: coverage
 
 on:
   pull_request:
@@ -22,7 +22,10 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-
+      
+      - name: Install Python dependencies
+        uses: py-actions/py-dependency-install@v4
+        
       - name: Install everything, run the tests, produce the .coverage file
         run: # This is the part where you put your own test command
             python -m coverage run -m unittest
