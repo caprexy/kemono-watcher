@@ -1,2 +1,0 @@
-  - name: Python Coverage
-    uses: orgoro/coverage@v3.1
