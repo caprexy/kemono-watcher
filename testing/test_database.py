@@ -10,7 +10,7 @@ import json
 # pylint: disable=C0411
 
 sys.path.append('../')
-from testing import test_constants
+from testing import local_constants
 
 import models.database_model as database
 import constants
@@ -224,11 +224,11 @@ class PretendContext:
             bytes: output bytes based on what it theoretically should've
         """
         if self.url.endswith("=0"):
-            with open(test_constants.USER1_FIRST_PAGE, 'rb') as file:
+            with open(local_constants.USER1_FIRST_PAGE, 'rb') as file:
                 sample_api_bytes = file.read()
                 return sample_api_bytes
         elif self.url.endswith("50"):
-            with open(test_constants.USER1_SECOND_PAGE, 'rb') as file:
+            with open(local_constants.USER1_SECOND_PAGE, 'rb') as file:
                 sample_api_bytes = file.read()
                 return sample_api_bytes
         else:

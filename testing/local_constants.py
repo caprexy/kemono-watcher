@@ -17,17 +17,19 @@ def generate_post_ids_from_bin(bin_file : str)-> list[str]:
             id_list.append(int(obj["id"]))
     return id_list
 
+
+FILE_DIRECTORY_PREFIX = "./testing/"
 # sample real user
 # https://kemono.party/patreon/user/72813
 USER1_NAME = "Shencomix"
 USER1_SERVICE = "Pateron"
 USER1_ID = 72813
-USER1_FIRST_PAGE = "shen_post_api_page_one.bin"
-USER1_SECOND_PAGE = "shen_post_api_page_two.bin"
+USER1_FIRST_PAGE = FILE_DIRECTORY_PREFIX+"shen_post_api_page_one.bin"
+USER1_SECOND_PAGE = FILE_DIRECTORY_PREFIX+"shen_post_api_page_two.bin"
 USER1_FIRST_PAGE_IDS = generate_post_ids_from_bin(USER1_FIRST_PAGE)
 USER1_SECOND_PAGE_IDS = generate_post_ids_from_bin(USER1_SECOND_PAGE)
-USER1_FIRST_HALF_FIRST_PAGE = "shen_post_api_page_one_first_half.json"
-USER1_SECOND_HALF_FIRST_PAGE = "shen_post_api_page_one_second_half.json"
+USER1_FIRST_HALF_FIRST_PAGE = FILE_DIRECTORY_PREFIX+"shen_post_api_page_one_first_half.json"
+USER1_SECOND_HALF_FIRST_PAGE = FILE_DIRECTORY_PREFIX+"shen_post_api_page_one_second_half.json"
 USER1_FIRST_HALF_POST_IDS = generate_post_ids_from_bin(USER1_FIRST_HALF_FIRST_PAGE)
 USER1_SECOND_HALF_POST_IDS = generate_post_ids_from_bin(USER1_SECOND_HALF_FIRST_PAGE)
 
@@ -36,5 +38,5 @@ USER1_SECOND_HALF_POST_IDS = generate_post_ids_from_bin(USER1_SECOND_HALF_FIRST_
 USER2_NAME = "Liliuhms"
 USER2_SERVICE = "Pateron"
 USER2_ID = 9210140
-USER2_FIRST_PAGE = "liliuhms_post_api_page_one.bin"
+USER2_FIRST_PAGE = FILE_DIRECTORY_PREFIX+"liliuhms_post_api_page_one.bin"
 USER2_FIRST_PAGE_IDS = generate_post_ids_from_bin(USER2_FIRST_PAGE)
