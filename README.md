@@ -1,3 +1,7 @@
+
+[![Coverage badge](https://raw.githubusercontent.com/caprexy/kemono-watcher/python-coverage-comment-action-data/badge.svg)](https://htmlpreview.github.io/?https://github.com/caprexy/kemono-watcher/blob/python-coverage-comment-action-data/htmlcov/index.html)
+
+
 # kemono-watcher
 Watches artist for new posts 
 
