@@ -4,8 +4,6 @@ on:
         branches:
             - master
             - main
-    push:
-    workflow_dispatch:
     
 jobs:
     coverage:
