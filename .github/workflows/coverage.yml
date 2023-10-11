@@ -7,9 +7,6 @@ on:
   push:
     branches:
       - "main"
-      
-container:
-  options: --user root
   
 jobs:
   test:
