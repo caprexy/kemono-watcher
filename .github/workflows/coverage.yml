@@ -4,6 +4,8 @@ on:
         branches:
             - master
             - main
+    push:
+    
 jobs:
     coverage:
         runs-on: ubuntu-latest
