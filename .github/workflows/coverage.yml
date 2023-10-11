@@ -28,7 +28,7 @@ jobs:
         
       - name: Install everything, run the tests, produce the .coverage file
         run: | # This is the part where you put your own test command
-            sudo apt-get install python-tk
+            sudo apt-get install python3-tk
             python -m coverage run -m unittest
             python -m coverage report
         
