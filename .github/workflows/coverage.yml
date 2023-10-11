@@ -7,7 +7,10 @@ on:
   push:
     branches:
       - "main"
-
+      
+container:
+  options: --user root
+  
 jobs:
   test:
     name: Run tests & display coverage
@@ -28,7 +31,7 @@ jobs:
         
       - name: Install everything, run the tests, produce the .coverage file
         run: | # This is the part where you put your own test command
-            apt-get install python-tk
+            sudo apt-get install python-tk
             python -m coverage run -m unittest
             python -m coverage report
         
