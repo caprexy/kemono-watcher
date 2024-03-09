@@ -1,0 +1,61 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Python-specific artifacts
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+env_bak/
+
+# Local development settings
+*.env
+
+# IDE files
+.vscode/
+.idea/
+
+# Compiled Python bytecode
+*.pyc
+
+# Compiled C extensions
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache/
+
+# Dependency directories
+.venv/
+pip-wheel-metadata/
+
+# Distribution files
+*.egg
+*.egg-info
+*.tar.gz
+*.whl
+
+# Ignore Jupyter Notebooks
+*.ipynb_checkpoints/
+
+# Ignore custom environment file
+.env
+dev
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db

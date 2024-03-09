@@ -1,0 +1,5 @@
+serviceList = [
+    "fanbox",
+    "patreon",
+    "fantia"
+]
