@@ -10,12 +10,12 @@ class LeftPane(QWidget):
     def __init__(self):
         super().__init__()
         
-        layout = QVBoxLayout(self)
-        self.setLayout(layout)
+        main_layout = QVBoxLayout(self)
+        self.setLayout(main_layout)
 
         user_list = UserList()
         self.user_list = user_list
-        layout.addWidget(user_list)
+        main_layout.addWidget(user_list)
         
         self.left_pane_controller = LeftPaneController(user_list)
 
@@ -33,6 +33,17 @@ class LeftPane(QWidget):
         user_buttons_layout.addWidget(add_user_button)
         add_user_button.clicked.connect(self.left_pane_controller.openDeleteUser)
         
-        layout.addLayout(user_buttons_layout)
+        main_layout.addLayout(user_buttons_layout)
+        
+        operation_button_layout = QHBoxLayout()
+        get_user_urls_button = QPushButton("Download user's url", self)
+        operation_button_layout.addWidget(get_user_urls_button)
+        get_user_urls_button.clicked.connect(self.left_pane_controller.getUsersUrl)
+        
+        get_all_user_urls_button = QPushButton("Download all user's url", self)
+        operation_button_layout.addWidget(get_all_user_urls_button)
+        get_all_user_urls_button.clicked.connect(self.left_pane_controller.getAllUsersUrl)
+        main_layout.addLayout(operation_button_layout)
         
         self.left_pane_controller.updateUserList()
+        

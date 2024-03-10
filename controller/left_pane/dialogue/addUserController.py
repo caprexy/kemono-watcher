@@ -1,21 +1,21 @@
-from controller.database.userDatabaseController import DatabaseController
+from controller.database.userDatabaseController import UserDatabaseController
 
 from view.warningPopup import WarningPopup
 
 class AddUserController():
     
     def __init__(self) -> None:
-        self.database_controller = DatabaseController()
+        self.database_controller = UserDatabaseController()
     
     def addUser(self,
                 username:str,
                 service:str,
                 service_id:int):
         
-        if self.database_controller.does_service_id_exist(service, service_id):
+        if self.database_controller.doesServiceIdExist(service, service_id):
             WarningPopup("This user already exists")
         else:
-            self.database_controller.add_user(
+            self.database_controller.addUser(
                 username,
                 service,
                 service_id

@@ -1,11 +1,11 @@
-from controller.database.userDatabaseController import DatabaseController
+from controller.database.userDatabaseController import UserDatabaseController
 
 from view.warningPopup import WarningPopup
 
 class EditUserController():
     
     def __init__(self) -> None:
-        self.database_controller = DatabaseController()
+        self.database_controller = UserDatabaseController()
     
     def editUser(self,
                 unique_user_id:int,
@@ -13,7 +13,7 @@ class EditUserController():
                 service:str,
                 service_id:int):
     
-        self.database_controller.edit_user(
+        self.database_controller.editUser(
             unique_user_id,
             username,
             service,

@@ -6,15 +6,17 @@ from controller.left_pane.dialogue.deleteUserController import DeleteUserControl
 from view.warningPopup import WarningPopup
 import view.left_pane.constants as constants
 
-from model.userModel import User
-
 class DeleteUserDialogue(QDialog):
     def __init__(self, 
-                user:User
-                ):
+                unique_user_id:int,
+                username:str,
+                service:str,
+                service_id:int,
+                update_funct):
         super().__init__()
-    
-        self.unique_user_id = user.id
+        
+        self.update_funct = update_funct
+        self.unique_user_id = unique_user_id
         
         self.delete_user_controller = DeleteUserController()
         
@@ -30,13 +32,13 @@ class DeleteUserDialogue(QDialog):
         deleting_label = QLabel(f"DELETING THIS USER")
         main_layout.addWidget(deleting_label)
         
-        username_label = QLabel(f"Username: {user.username}")
+        username_label = QLabel(f"Username: {username}")
         main_layout.addWidget(username_label)
         
-        service_label = QLabel(f"Service: {user.service}")
+        service_label = QLabel(f"Service: {service}")
         main_layout.addWidget(service_label)
         
-        service_id_label = QLabel(f"Service ID: {user.service_id}")
+        service_id_label = QLabel(f"Service ID: {service_id}")
         main_layout.addWidget(service_id_label)
         
         accept_button = QPushButton("Accept")
@@ -54,4 +56,5 @@ class DeleteUserDialogue(QDialog):
 
     
     def closeWindow(self):
+        self.update_funct()
         self.close()

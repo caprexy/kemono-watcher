@@ -6,22 +6,24 @@ from controller.left_pane.dialogue.editUserController import EditUserController
 from view.warningPopup import WarningPopup
 import view.left_pane.constants as constants
 
-from model.userModel import User
-
 class EditUserDialogue(QDialog):
     def __init__(self, 
-                user:User,
-                ):
+                unique_user_id:int,
+                username:str,
+                service:str,
+                service_id:int,
+                update_funct):
         super().__init__()
         
-        self.unique_user_id = user.id
+        self.update_funct = update_funct
+        self.unique_user_id = unique_user_id
         
         self.edit_user_controller = EditUserController()
         vbox = QVBoxLayout()
 
         username_label = QLabel('Username:')
         username_input = QLineEdit(self)
-        username_input.setText(user.username)
+        username_input.setText(username)
         self.username_input = username_input
         vbox.addWidget(username_label)
         vbox.addWidget(username_input)
@@ -30,13 +32,13 @@ class EditUserDialogue(QDialog):
         service_dropdown = QComboBox(self)
         self.service_dropdown = service_dropdown
         [service_dropdown.addItem(service) for service in constants.serviceList]
-        service_dropdown.setCurrentText(user.service)
+        service_dropdown.setCurrentText(service)
         vbox.addWidget(service_label)
         vbox.addWidget(service_dropdown)
 
         service_id_label = QLabel('User ID:')
         service_id_input = QLineEdit(self)
-        service_id_input.setText(user.service_id)
+        service_id_input.setText(service_id)
         self.service_id_input = service_id_input
         vbox.addWidget(service_id_label)
         vbox.addWidget(service_id_input)
@@ -76,4 +78,5 @@ class EditUserDialogue(QDialog):
 
     
     def closeWindow(self):
+        self.update_funct()
         self.close()

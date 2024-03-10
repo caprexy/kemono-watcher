@@ -1,44 +1,33 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton
+from PyQt6.QtWidgets import QHBoxLayout, QWidget, QVBoxLayout, QPushButton
+
+from view.right_pane.components.UrlListView import UrlListView
+
+from controller.right_pane.rightPaneController import RightPaneController
 
 class RightPane(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.init_ui()
-
-    def init_ui(self):
-        # Create buttons
-        btn1 = QPushButton('Button 1', self)
-        btn2 = QPushButton('Button 2', self)
-        btn3 = QPushButton('Button 3', self)
-        btn4 = QPushButton('Button 4', self)
-
-        # Connect buttons to custom functions
-        btn1.clicked.connect(self.on_button1_click)
-        btn2.clicked.connect(self.on_button2_click)
-        btn3.clicked.connect(self.on_button3_click)
-        btn4.clicked.connect(self.on_button4_click)
-
-        # Create layout and add buttons
-        layout = QVBoxLayout(self)
-        layout.addWidget(btn1)
-        layout.addWidget(btn2)
-        layout.addWidget(btn3)
-        layout.addWidget(btn4)
-
-        # Set layout for the widget
-        self.setLayout(layout)
-
-
-    # Custom functions for button clicks
-    def on_button1_click(self):
-        print("Button 1 clicked")
-
-    def on_button2_click(self):
-        print("Button 2 clicked")
-
-    def on_button3_click(self):
-        print("Button 3 clicked")
-
-    def on_button4_click(self):
-        print("Button 4 clicked")
+        main_layout = QVBoxLayout(self)
+        self.setLayout(main_layout)
+        
+        url_list = UrlListView()
+        self.url_list = url_list
+        main_layout.addWidget(self.url_list)
+        
+        self.right_pane_controller = RightPaneController(url_list)
+        
+        url_buttons_layout = QHBoxLayout()
+        add_url_button = QPushButton('Add url', self)
+        url_buttons_layout.addWidget(add_url_button)
+        add_url_button.clicked.connect(self.right_pane_controller.addUrl)
+        
+        edit_url_button = QPushButton('Edit url', self)
+        url_buttons_layout.addWidget(edit_url_button)
+        edit_url_button.clicked.connect(self.right_pane_controller.editUrl)
+        
+        delete_url_button = QPushButton('Delete url', self)
+        url_buttons_layout.addWidget(delete_url_button)
+        delete_url_button.clicked.connect(self.right_pane_controller.deleteUrl)
+        
+        main_layout.addLayout(url_buttons_layout)

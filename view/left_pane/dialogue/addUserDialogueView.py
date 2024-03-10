@@ -7,10 +7,8 @@ from view.warningPopup import WarningPopup
 import view.left_pane.constants as constants
 
 class AddUserDialogue(QDialog):
-    def __init__(self, update_funct):
+    def __init__(self):
         super().__init__()
-        
-        self.update_funct = update_funct
         
         self.add_user_controller = AddUserController()
         vbox = QVBoxLayout()
@@ -70,5 +68,4 @@ class AddUserDialogue(QDialog):
 
     
     def closeWindow(self):
-        self.update_funct()
         self.close()

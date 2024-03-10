@@ -1,42 +1,36 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayout, QComboBox
 
-from controller.left_pane.dialogue.editUserController import EditUserController
+from controller.left_pane.dialogue.addUserController import AddUserController
 
 from view.warningPopup import WarningPopup
 import view.left_pane.constants as constants
 
-from model.userModel import User
-
-class EditUserDialogue(QDialog):
-    def __init__(self, 
-                user:User,
-                ):
+class AddUrlDialogue(QDialog):
+    def __init__(self, update_funct):
         super().__init__()
         
-        self.unique_user_id = user.id
+        self.update_funct = update_funct
         
-        self.edit_user_controller = EditUserController()
+        self.add_url_controller = AddUserController()
         vbox = QVBoxLayout()
 
-        username_label = QLabel('Username:')
-        username_input = QLineEdit(self)
-        username_input.setText(user.username)
-        self.username_input = username_input
-        vbox.addWidget(username_label)
-        vbox.addWidget(username_input)
+        # Create widgets
+        urlname_label = QLabel('Username:')
+        urlname_input = QLineEdit(self)
+        self.urlname_input = urlname_input
+        vbox.addWidget(urlname_label)
+        vbox.addWidget(urlname_input)
 
         service_label = QLabel('Service:')
         service_dropdown = QComboBox(self)
         self.service_dropdown = service_dropdown
         [service_dropdown.addItem(service) for service in constants.serviceList]
-        service_dropdown.setCurrentText(user.service)
         vbox.addWidget(service_label)
         vbox.addWidget(service_dropdown)
 
-        service_id_label = QLabel('User ID:')
+        service_id_label = QLabel('Url ID:')
         service_id_input = QLineEdit(self)
-        service_id_input.setText(user.service_id)
         self.service_id_input = service_id_input
         vbox.addWidget(service_id_label)
         vbox.addWidget(service_id_input)
@@ -53,12 +47,12 @@ class EditUserDialogue(QDialog):
 
         # Set window properties
         self.setGeometry(300, 300, 300, 200)
-        self.setWindowTitle('User Input Dialog')
+        self.setWindowTitle('Url Input Dialog')
         
     def acceptClicked(self):
-        username = self.username_input.text().strip()
-        if username == "":
-            WarningPopup("Nothing entered for username")
+        urlname = self.urlname_input.text().strip()
+        if urlname == "":
+            WarningPopup("Nothing entered for urlname")
             return
         
         service = self.service_dropdown.currentText()
@@ -71,9 +65,10 @@ class EditUserDialogue(QDialog):
             WarningPopup("Id is not number")
             return
         
-        self.edit_user_controller.editUser(self.unique_user_id, username, service, service_id)
+        self.add_url_controller.addUser(urlname, service, service_id)
         self.closeWindow()
 
     
     def closeWindow(self):
+        self.update_funct()
         self.close()

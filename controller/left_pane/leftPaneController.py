@@ -4,46 +4,57 @@ from view.left_pane.dialogue.addUserDialogueView import AddUserDialogue
 from view.left_pane.dialogue.editUserDialogueView import EditUserDialogue
 from view.left_pane.dialogue.deleteUserDialogueView import DeleteUserDialogue
 from view.left_pane.components.userListView import UserList
+from view.right_pane.components.UrlListView import UrlListView
 from view.warningPopup import WarningPopup
 
-from controller.database.userDatabaseController import DatabaseController
+from controller.database.userDatabaseController import UserDatabaseController
+from controller.left_pane.getUrlsController import UrlsManager
+
+from model.userModel import User
 
 class LeftPaneController():
     def __init__(self, 
                 user_list: UserList) -> None:
-        self.database_controller = DatabaseController()
-        
+        self.database_controller = UserDatabaseController()
+        self.url_manager = UrlsManager()
+        self.right_pane_url_list = UrlListView()
         self.user_list = user_list
         
     def openAddUser(self):
-        add_user_dialogue = AddUserDialogue(self.updateUserList)
+        add_user_dialogue = AddUserDialogue()
         add_user_dialogue.exec()
+        self.updateUserList()
         
     def openEditUser(self):
-        row_items = self.getOneSelectedUser()
-        if row_items is []: return
+        selected_user = self.getOneSelectedUser()
+        if not selected_user: return
         
         EditUserDialogue(
-            row_items[0],
-            row_items[1],
-            row_items[2],
-            row_items[3],
-            self.updateUserList).exec()
+            selected_user).exec()
+        self.updateUserList()
         
     def openDeleteUser(self):
-        row_items = self.getOneSelectedUser()
-        if row_items is []: return
+        selected_user = self.getOneSelectedUser()
+        if not selected_user: return
         
         add_user_dialogue = DeleteUserDialogue(
-            row_items[0],
-            row_items[1],
-            row_items[2],
-            row_items[3],
-            self.updateUserList)
+            selected_user)
         add_user_dialogue.exec()
+        self.updateUserList()
+        
+    def getUsersUrl(self):
+        selected_user = self.getOneSelectedUser()
+        if not selected_user: return
+        
+        self.url_manager.downloadUrls(selected_user, self.right_pane_url_list)
+        self.right_pane_url_list.update()
+    
+    def getAllUsersUrl(self):
+        self.url_manager.downloadAllUserUrls(self.database_controller.getAllUsers(), self.right_pane_url_list)
+        self.right_pane_url_list.update()
         
     def updateUserList(self):
-        users = self.database_controller.get_all_users()
+        users = self.database_controller.getAllUsers()
         self.user_list.update(users)
     
     def getOneSelectedUser(self):
@@ -56,4 +67,14 @@ class LeftPaneController():
         selected_row = selected_range.topRow()
         
         row_items = [self.user_list.item(selected_row, col).text() for col in range(self.user_list.columnCount())]
-        return row_items
+        
+        if len(row_items) == 0 :
+            return None
+        
+        selected_user = User(
+            row_items[0],
+            row_items[1],
+            row_items[2],
+            row_items[3],
+        )
+        return selected_user

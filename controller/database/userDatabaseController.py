@@ -2,22 +2,22 @@ import sqlite3
 
 from controller.database import userDatabaseConstants
 
-from model.user import User
+from model.userModel import User
 
-class DatabaseController:
+class UserDatabaseController:
     
     # Ensure is singleton
     _instance = None
     def __new__(cls):
         if not cls._instance:
-            cls._instance = super(DatabaseController, cls).__new__(cls)
+            cls._instance = super(UserDatabaseController, cls).__new__(cls)
         return cls._instance
     
     connection = None
     cursor = None
     def __init__(self):
         self.connect()
-        self.create_table()
+        self.createTable()
     
     def connect(self):
         if not self.connection:
@@ -25,34 +25,34 @@ class DatabaseController:
         if not self.cursor:
             self.cursor = self.connection.cursor()
 
-    def create_table(self):
+    def createTable(self):
         # Create a 'users' table if it doesn't exist
         self.connect()
         self.cursor.execute(userDatabaseConstants.userTableCreateCommand)
         self.connection.commit()
 
-    def add_user(self, username:str, user_service:str, user_service_id:int):
+    def addUser(self, username:str, user_service:str, user_service_id:int):
         # Insert a new user into the 'users' table
         self.connect()
         self.cursor.execute('INSERT INTO ' + 
-                            userDatabaseConstants.userTableName + 
-                            f' ({userDatabaseConstants.userUsername},'+
+                            userDatabaseConstants.user_table_name + 
+                            f' ({userDatabaseConstants.user_username},'+
                             f'{userDatabaseConstants.user_service},'+
                             f'{userDatabaseConstants.user_service_id})' +
                             ' VALUES (?, ?, ?)',
                             [username,user_service,user_service_id])
         self.connection.commit()
         
-    def edit_user(self, unique_id: int, username: str, user_service: str, user_service_id: int):
+    def editUser(self, unique_id: int, username: str, user_service: str, user_service_id: int):
         # Update an existing user in the 'users' table based on the 
         self.connect()
         try:
             self.cursor.execute(
-                f'UPDATE {userDatabaseConstants.userTableName} '+
-                f'SET {userDatabaseConstants.userUsername} = ?, '+
+                f'UPDATE {userDatabaseConstants.user_table_name} '+
+                f'SET {userDatabaseConstants.user_username} = ?, '+
                 f'{userDatabaseConstants.user_service} = ?, '+
                 f'{userDatabaseConstants.user_service_id} = ? '+
-                f'WHERE {userDatabaseConstants.userUUIDName} = ?',
+                f'WHERE {userDatabaseConstants.user_unique_id} = ?',
                 [username, user_service, user_service_id, unique_id]
             )
             self.connection.commit()
@@ -60,13 +60,13 @@ class DatabaseController:
         except Exception as e:
             print(f"Error updating user: {e}")
             
-    def delete_user(self, unique_id: int):
+    def deleteUser(self, unique_id: int):
         # Delete an existing user from the 'users' table based on the
         self.connect()
         try:
             self.cursor.execute(
-                f'DELETE FROM {userDatabaseConstants.userTableName} '+
-                f'WHERE {userDatabaseConstants.userUUIDName} = ?',
+                f'DELETE FROM {userDatabaseConstants.user_table_name} '+
+                f'WHERE {userDatabaseConstants.user_unique_id} = ?',
                 [unique_id]
             )
             self.connection.commit()
@@ -76,10 +76,10 @@ class DatabaseController:
 
 
         
-    def get_all_users(self):
+    def getAllUsers(self):
         # Retrieve all users from the 'users' table
         self.connect()
-        self.cursor.execute(f'SELECT * FROM {userDatabaseConstants.userTableName}')
+        self.cursor.execute(f'SELECT * FROM {userDatabaseConstants.user_table_name}')
         res = self.cursor.fetchall()
         users = []
         for user in res:
@@ -93,10 +93,10 @@ class DatabaseController:
             )
         return users
     
-    def does_service_id_exist(self, service:str, service_id:int):
+    def doesServiceIdExist(self, service:str, service_id:int):
         query = f"""
         SELECT COUNT(*) AS count
-        FROM {userDatabaseConstants.userTableName}
+        FROM {userDatabaseConstants.user_table_name}
         WHERE {userDatabaseConstants.user_service} = ? AND {userDatabaseConstants.user_service_id} = ?;
         """
         self.cursor.execute(query, (service, service_id))
