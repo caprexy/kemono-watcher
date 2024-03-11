@@ -22,12 +22,19 @@ class RightPane(QWidget):
         url_buttons_layout.addWidget(add_url_button)
         add_url_button.clicked.connect(self.right_pane_controller.addUrl)
         
-        edit_url_button = QPushButton('Edit url', self)
-        url_buttons_layout.addWidget(edit_url_button)
-        edit_url_button.clicked.connect(self.right_pane_controller.editUrl)
-        
         delete_url_button = QPushButton('Delete url', self)
         url_buttons_layout.addWidget(delete_url_button)
         delete_url_button.clicked.connect(self.right_pane_controller.deleteUrl)
         
         main_layout.addLayout(url_buttons_layout)
+        
+        visit_url_buttons = QHBoxLayout()
+        open_urls_button = QPushButton('Open urls', self)
+        visit_url_buttons.addWidget(open_urls_button)
+        open_urls_button.clicked.connect(self.right_pane_controller.openUrls)
+        
+        visit_urls_button = QPushButton('Flip url visit status', self)
+        visit_url_buttons.addWidget(visit_urls_button)
+        visit_urls_button.clicked.connect(self.right_pane_controller.flipUrl)
+        
+        main_layout.addLayout(visit_url_buttons)

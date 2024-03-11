@@ -1,3 +1,5 @@
+from enum import Enum
+
 class User:
     def __init__(self,
                 id:int,
@@ -17,4 +19,10 @@ class User:
     
 
 def values_names_to_display():
-    return ["Unique id", "Username", "Service", "Service_id"]
+    return [member.name.replace('_', ' ') for member in urlValueIndexes]
+
+class urlValueIndexes(Enum):
+    Unique_id = 0
+    Username = 1
+    Service = 2
+    Service_id = 3

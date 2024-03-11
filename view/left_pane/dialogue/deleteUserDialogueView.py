@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QApplication, QDialog, QLabel, QLineEdit, QPushButto
 
 from controller.left_pane.dialogue.deleteUserController import DeleteUserController
 
-from view.warningPopup import WarningPopup
+from view.popups import WarningPopup
 import view.left_pane.constants as constants
 
 from model.userModel import User

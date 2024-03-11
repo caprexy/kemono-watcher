@@ -1,5 +1,4 @@
-from PyQt6.QtWidgets import QTableWidget , QTableWidgetItem, QAbstractItemView, QVBoxLayout, QWidget, QLabel
-
+from PyQt6.QtWidgets import QTableWidget , QTableWidgetItem, QAbstractItemView,  QHeaderView, QAbstractScrollArea, QSizePolicy
 from model.userModel import User, values_names_to_display
 
 class UserList(QTableWidget):
@@ -10,9 +9,10 @@ class UserList(QTableWidget):
         self.setHorizontalHeaderLabels(values_names_to_display())
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.cellClicked.connect(self.on_cell_clicked)
-
+        self.setSortingEnabled(True)
         
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+
     def update(self, users:[User]):
         if not users: return
         
@@ -23,7 +23,4 @@ class UserList(QTableWidget):
             for col, val in enumerate(user.values_to_display()):
                 table_item =  QTableWidgetItem(str(val))
                 self.setItem(row, col, table_item)
-                
-    def on_cell_clicked(self, row, col):
-        # Custom slot to handle the cellClicked event
-        print(f'Cell clicked at: ({row}, {col})')
+        

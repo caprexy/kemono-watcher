@@ -1,6 +1,6 @@
 from controller.database.userDatabaseController import UserDatabaseController
 
-from view.warningPopup import WarningPopup
+from view.popups import WarningPopup
 
 class AddUserController():
     

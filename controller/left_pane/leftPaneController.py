@@ -5,17 +5,21 @@ from view.left_pane.dialogue.editUserDialogueView import EditUserDialogue
 from view.left_pane.dialogue.deleteUserDialogueView import DeleteUserDialogue
 from view.left_pane.components.userListView import UserList
 from view.right_pane.components.UrlListView import UrlListView
-from view.warningPopup import WarningPopup
+from view.popups import WarningPopup
 
 from controller.database.userDatabaseController import UserDatabaseController
+from controller.database.urlDatabaseController import UrlDatabaseController
 from controller.left_pane.getUrlsController import UrlsManager
 
 from model.userModel import User
+from model.userModel import urlValueIndexes as userValueIndexes
+from model.urlModel import urlValueIndexes as urlValueIndexes
 
 class LeftPaneController():
     def __init__(self, 
                 user_list: UserList) -> None:
-        self.database_controller = UserDatabaseController()
+        self.user_database_controller = UserDatabaseController()
+        self.url_database_controller = UrlDatabaseController()
         self.url_manager = UrlsManager()
         self.right_pane_url_list = UrlListView()
         self.user_list = user_list
@@ -50,11 +54,30 @@ class LeftPaneController():
         self.right_pane_url_list.update()
     
     def getAllUsersUrl(self):
-        self.url_manager.downloadAllUserUrls(self.database_controller.getAllUsers(), self.right_pane_url_list)
+        self.url_manager.downloadAllUserUrls(self.user_database_controller.getAllUsers(), self.right_pane_url_list)
         self.right_pane_url_list.update()
         
+    def showSelectUsersUrls(self):
+        if self.user_list.selectedRanges() == []: return []
+        
+        selected_range = self.user_list.selectedRanges()[0]
+        urls = []
+        for row in range(selected_range.bottomRow(), selected_range.topRow()+1):
+            service = self.user_list.item(row, urlValueIndexes.Service.value+1).text()
+            service_id = self.user_list.item(row, urlValueIndexes.Service_id.value+1).text()
+            urls += self.url_database_controller.getUrlsForUser(service, service_id)
+        self.right_pane_url_list.update(urls)
+        
+    def showAllUsersUrls(self):
+        self.right_pane_url_list.update()
+    
+    def showNotVisitedUrls(self):
+        urls = self.url_database_controller.getAllNotVisitedUrls()
+        self.right_pane_url_list.update(urls)
+        
+        
     def updateUserList(self):
-        users = self.database_controller.getAllUsers()
+        users = self.user_database_controller.getAllUsers()
         self.user_list.update(users)
     
     def getOneSelectedUser(self):
@@ -72,9 +95,9 @@ class LeftPaneController():
             return None
         
         selected_user = User(
-            row_items[0],
-            row_items[1],
-            row_items[2],
-            row_items[3],
+            row_items[userValueIndexes.Unique_id.value],
+            row_items[userValueIndexes.Username.value],
+            row_items[userValueIndexes.Service.value],
+            row_items[userValueIndexes.Service_id.value],
         )
         return selected_user

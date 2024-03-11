@@ -1,44 +1,43 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayout, QComboBox
+from PyQt6.QtWidgets import QCheckBox, QDialog, QLabel, QLineEdit, QPushButton, QDateTimeEdit, QVBoxLayout, QComboBox
 
-from controller.left_pane.dialogue.addUserController import AddUserController
+from controller.right_pane.dialogue.addUrlController import AddUrlController
+from controller.left_pane.kemonoApiController import postUrlDecrypter
 
-from view.warningPopup import WarningPopup
+from view.popups import WarningPopup
 import view.left_pane.constants as constants
 
+from model.urlModel import urlValueIndexes
+
 class AddUrlDialogue(QDialog):
-    def __init__(self, update_funct):
+    def __init__(self):
         super().__init__()
-        
-        self.update_funct = update_funct
-        
-        self.add_url_controller = AddUserController()
+        self.add_url_controller = AddUrlController()
         vbox = QVBoxLayout()
-
-        # Create widgets
-        urlname_label = QLabel('Username:')
-        urlname_input = QLineEdit(self)
-        self.urlname_input = urlname_input
-        vbox.addWidget(urlname_label)
-        vbox.addWidget(urlname_input)
-
-        service_label = QLabel('Service:')
-        service_dropdown = QComboBox(self)
-        self.service_dropdown = service_dropdown
-        [service_dropdown.addItem(service) for service in constants.serviceList]
-        vbox.addWidget(service_label)
-        vbox.addWidget(service_dropdown)
-
-        service_id_label = QLabel('Url ID:')
-        service_id_input = QLineEdit(self)
-        self.service_id_input = service_id_input
-        vbox.addWidget(service_id_label)
-        vbox.addWidget(service_id_input)
+        
+        username_label = QLabel(urlValueIndexes.Username.name +':')
+        username_input = QLineEdit(self)
+        self.username_input = username_input
+        vbox.addWidget(username_label)
+        vbox.addWidget(username_input)
+        
+        url_label = QLabel(urlValueIndexes.Url.name +':')
+        url_input = QLineEdit(self)
+        self.url_input = url_input
+        vbox.addWidget(url_label)
+        vbox.addWidget(url_input)
+        
+        visited_label = QLabel(urlValueIndexes.Visited.name.replace("_"," ") +':')
+        visited_checkbox = QCheckBox(self)
+        visited_checkbox.setChecked(True)
+        self.visited_checkbox = visited_checkbox
+        vbox.addWidget(visited_label)
+        vbox.addWidget(visited_checkbox)
 
         accept_button = QPushButton('Accept', self)
         accept_button.clicked.connect(self.acceptClicked)
         close_button = QPushButton('Close', self)
-        close_button.clicked.connect(self.closeWindow)
+        close_button.clicked.connect(self.close)
         vbox.addWidget(accept_button)
         vbox.addWidget(close_button)
 
@@ -50,25 +49,28 @@ class AddUrlDialogue(QDialog):
         self.setWindowTitle('Url Input Dialog')
         
     def acceptClicked(self):
-        urlname = self.urlname_input.text().strip()
-        if urlname == "":
-            WarningPopup("Nothing entered for urlname")
+        username = self.username_input.text().strip()
+        if username == "":
+            WarningPopup("Nothing entered for username")
             return
         
-        service = self.service_dropdown.currentText()
-        
-        service_id = self.service_id_input.text()
-        if service_id == "":
-            WarningPopup("Id not entered")
-            return
-        if not service_id.isdigit():
-            WarningPopup("Id is not number")
+        url = self.url_input.text().strip()
+        if url == "":
+            WarningPopup("Nothing entered for url")
             return
         
-        self.add_url_controller.addUser(urlname, service, service_id)
+        visited = self.visited_checkbox.isChecked()
+        
+        if postUrlDecrypter(url) is None:
+            WarningPopup("Couldnt decrypt url")
+            return
+        service, service_id, post_id = postUrlDecrypter(url)
+        
+        self.add_url_controller.addUrl(
+            username=username, 
+            post_id=post_id, 
+            url=url,
+            service=service, 
+            service_id=service_id, 
+            visited=visited)
         self.closeWindow()
-
-    
-    def closeWindow(self):
-        self.update_funct()
-        self.close()

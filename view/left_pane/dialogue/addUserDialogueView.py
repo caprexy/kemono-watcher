@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QApplication, QDialog, QLabel, QLineEdit, QPushButto
 
 from controller.left_pane.dialogue.addUserController import AddUserController
 
-from view.warningPopup import WarningPopup
+from view.popups import WarningPopup
 import view.left_pane.constants as constants
 
 class AddUserDialogue(QDialog):

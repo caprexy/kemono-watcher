@@ -74,8 +74,6 @@ class UserDatabaseController:
         except Exception as e:
             print(f"Error deleting user: {e}")
 
-
-        
     def getAllUsers(self):
         # Retrieve all users from the 'users' table
         self.connect()

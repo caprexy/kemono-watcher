@@ -1,6 +1,6 @@
 import sqlite3
 import threading
-from datetime import date
+from datetime import date, datetime
 
 from controller.database import urlDatabaseConstants
 
@@ -35,13 +35,11 @@ class UrlDatabaseController:
                 getattr(self.thread_data, 'cursor', None)
     
     def createTable(self):
-        # Create a 'users' table if it doesn't exist
         connection, cursor = self.get_connection_n_cursor()
         cursor.execute(urlDatabaseConstants.userTableCreateCommand)
         connection.commit()
 
-    def addUrl(self, url:str, visited:bool, visited_time:date, service:str, service_id:str, username:str):
-        # Insert a new user into the 'users' table
+    def addUrl(self, url:str, visited:bool, visited_time:date, service:str, service_id:str, username:str, post_id:int):
         connection, cursor = self.get_connection_n_cursor()
         cursor.execute('INSERT INTO ' + 
                             urlDatabaseConstants.url_table_name + 
@@ -50,43 +48,25 @@ class UrlDatabaseController:
                             f'{urlDatabaseConstants.visited_time},' +
                             f'{urlDatabaseConstants.service_id},' +
                             f'{urlDatabaseConstants.service},' +
+                            f'{urlDatabaseConstants.post_id},' +
                             f'{urlDatabaseConstants.username})' +
-                            ' VALUES (?, ?, ?, ?, ?, ?)',
-                            [url,visited,visited_time, service_id, service, username])
+                            ' VALUES (?, ?, ?, ?, ?, ?, ?)',
+                            [url,visited,visited_time, service_id, service, post_id, username])
         connection.commit()
         
-    # def editUser(self, unique_id: int, username: str, user_service: str, user_service_id: int):
-    #     # Update an existing user in the 'users' table based on the 
-    #     self.connect()
-    #     try:
-    #         self.cursor.execute(
-    #             f'UPDATE {urlDatabaseConstants.user_table_name} '+
-    #             f'SET {urlDatabaseConstants.user_username} = ?, '+
-    #             f'{urlDatabaseConstants.user_service} = ?, '+
-    #             f'{urlDatabaseConstants.user_service_id} = ? '+
-    #             f'WHERE {urlDatabaseConstants.user_unique_id} = ?',
-    #             [username, user_service, user_service_id, unique_id]
-    #         )
-    #         self.connection.commit()
-    #         print(f"User with id {unique_id} updated successfully.")
-    #     except Exception as e:
-    #         print(f"Error updating user: {e}")
-            
-    # def deleteUser(self, unique_id: int):
-    #     # Delete an existing user from the 'users' table based on the
-    #     self.connect()
-    #     try:
-    #         self.cursor.execute(
-    #             f'DELETE FROM {urlDatabaseConstants.user_table_name} '+
-    #             f'WHERE {urlDatabaseConstants.user_unique_id} = ?',
-    #             [unique_id]
-    #         )
-    #         self.connection.commit()
-    #         print(f"User with id {unique_id} deleted successfully.")
-    #     except Exception as e:
-    #         print(f"Error deleting user: {e}")
-
-
+    def deleteUrl(self, unique_id: int):
+        # Delete an existing user from the 'users' table based on the
+        connection, cursor = self.get_connection_n_cursor()
+        try:
+            cursor.execute(
+                f'DELETE FROM {urlDatabaseConstants.url_table_name} '+
+                f'WHERE {urlDatabaseConstants.unique_id} = ?',
+                [unique_id]
+            )
+            connection.commit()
+            print(f"User with id {unique_id} deleted successfully.")
+        except Exception as e:
+            print(f"Error deleting user: {e}")
         
     def getAllUrls(self):
         # Retrieve all users from the 'users' table
@@ -96,18 +76,65 @@ class UrlDatabaseController:
         urls = []
         for url in res:
             urls.append(
-                Url(
-                    url[0],
-                    url[1],
-                    url[2],
-                    url[3],
-                    url[4],
-                    url[5],
-                    url[6]
-                )
+                self.sqlResRowToUser(url)
             )
         return urls
     
+
+    def getUrlsForUser(self, service: str, service_id: str):
+        connection, cursor = self.get_connection_n_cursor()
+        query = f"""
+        SELECT *
+        FROM {urlDatabaseConstants.url_table_name}
+        WHERE {urlDatabaseConstants.service} = ? AND {urlDatabaseConstants.service_id} = ?;
+        """
+        cursor.execute(query, (service, service_id))
+        res = cursor.fetchall()
+        urls = []
+        for url in res:
+            urls.append(
+                self.sqlResRowToUser(url)
+            )
+        return urls
+    
+    def getAllNotVisitedUrls(self):
+        connection, cursor = self.get_connection_n_cursor()
+        query = f"""
+        SELECT *
+        FROM {urlDatabaseConstants.url_table_name}
+        WHERE {urlDatabaseConstants.visited} = ?;
+        """
+        cursor.execute(query, (False,))
+        res = cursor.fetchall()
+        urls = []
+        for url in res:
+            urls.append(
+                self.sqlResRowToUser(url)
+            )
+        return urls
+    
+    def flipUrl(self, url:Url):
+        connection, cursor = self.get_connection_n_cursor()
+        update_query = f"""
+        UPDATE {urlDatabaseConstants.url_table_name}
+        SET {urlDatabaseConstants.visited} = ?
+        WHERE {urlDatabaseConstants.unique_id} = ?;
+        """
+        cursor.execute(update_query, (not url.visited, url.unique_id))
+        connection.commit()
+        
+    def sqlResRowToUser(self, url:list):
+        return Url(
+                unique_id=url[0],
+                url=url[1],
+                post_id=url[2],
+                visited=url[3],
+                visited_time=url[4],
+                service=url[5],
+                service_id=url[6],
+                username=url[7],
+            )
+        
     def doesUrlExist(self, url:str):
         connection, cursor = self.get_connection_n_cursor()
         query = f"""
@@ -118,3 +145,15 @@ class UrlDatabaseController:
         cursor.execute(query, (url,))
         result = cursor.fetchone()
         return result[0] == 1
+    
+def postUrlDecrypter(url):
+    parts = url.split("/")
+    
+    if len(parts) == 8 and parts[2] == "kemono.su" and parts[4] == "user":
+        service = parts[3]
+        service_id = parts[5]
+        post_id = parts[7]
+        return service, service_id, post_id
+    else:
+        # Return None or raise an exception for invalid URLs
+        return None
