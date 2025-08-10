@@ -1,6 +1,6 @@
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QTableWidget , QTableWidgetItem, QHeaderView, QAbstractItemView, QSizePolicy, QLabel
-
+from PyQt6.QtCore import Qt
 from model.urlModel import Url, values_names_to_display, visited_text, urlValueIndexes
 
 from controller.database.urlDatabaseController import UrlDatabaseController
@@ -44,7 +44,11 @@ class UrlListView(QTableWidget):
             for col, val in enumerate(url.values_to_display()):
                 if val is visited_text:
                     visited = True
-                table_item =  QTableWidgetItem(str(val))
+                if type(val) is int:
+                    table_item =  QTableWidgetItem()
+                    table_item.setData(Qt.ItemDataRole.DisplayRole, val)
+                else:
+                    table_item =  QTableWidgetItem(str(val))
                 self.setItem(row, col, table_item)
             if visited:
                 self.set_row_background_color(self, row, QColor(102, 204, 102))

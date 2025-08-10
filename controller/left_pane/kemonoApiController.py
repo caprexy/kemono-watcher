@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
-import requests
+import requests, time, json
 
 from controller.database.urlDatabaseController import UrlDatabaseController
 
@@ -13,38 +13,56 @@ class KemonoApiController:
         self.parent = parent
         self.database_controller = UrlDatabaseController()
     
-    def generateUserUrls(self, user:User, update_dialogue_funct):
+    def scanUserUrls(self, user:User, update_dialogue_funct, full_url_check, close_signal, finish_popup = True):
         worker_thread = WorkerThread(self.parent, 
                                     user.service, 
                                     user.service_id, 
                                     user.username,
-                                    self.database_controller)
+                                    self.database_controller,
+                                    full_url_check)
         worker_thread.update_dialog.connect(
             lambda new_urls, total_urls: update_dialogue_funct(new_urls, total_urls)
         )
-        worker_thread.finished.connect(lambda : WarningPopup("Finished"))
+        close_signal.connect(worker_thread.terminate)
+        if finish_popup:
+            worker_thread.finished.connect(lambda : WarningPopup("Finished " + user.username + " from " + user.service))
         worker_thread.start()
 
 class WorkerThread(QThread):
     update_dialog = pyqtSignal(int, int) # new, total urls
     finished = pyqtSignal()
     
-    def __init__(self, parent, service:str, service_id:int, username:str, database_controller:UrlDatabaseController) -> None:
+    def __init__(self, parent, service:str, service_id:int, username:str, database_controller:UrlDatabaseController, full_url_check:bool) -> None:
         super().__init__(parent)
         self.service = service
         self.service_id = service_id
         self.database_controller = database_controller
         self.username = username
+        self.full_url_check = full_url_check
         
     def run(self):
-        
         step = -50
+        step_size = 50
         res_list = [1]
         while res_list != []:
             request = "https://kemono.su/api/v1/" + self.service + \
                         "/user/" + str(self.service_id) + "?o="
-            step += 50
-            response = requests.get(request+str(step))
+            step += step_size
+            if (not self.full_url_check) and (step > step_size * 4):
+                break
+            
+            try: 
+                response = requests.get(request+str(step))
+                while response.status_code != 200:
+                    time.sleep(1)
+                    response = requests.get(request+str(step))
+            except requests.exceptions.ConnectionError as e:
+                print("Connection error:", e)
+            except requests.exceptions.Timeout as e:
+                print("Timeout error:", e)
+            except requests.exceptions.HTTPError as e:
+                print("HTTP error:", e)
+                
             total_urls = 0
             new_urls = 0
             if response.status_code == 200:
@@ -65,7 +83,7 @@ class WorkerThread(QThread):
                 self.update_dialog.emit(new_urls, total_urls)
             else:
                 # Print an error message
-                print(f"Error: {response.status_code}")
+                print(f"Error: {response}")
             pass
         
         self.finished.emit()

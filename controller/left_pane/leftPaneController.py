@@ -46,15 +46,15 @@ class LeftPaneController():
         add_user_dialogue.exec()
         self.updateUserList()
         
-    def getUsersUrl(self):
+    def getUsersUrl(self, full_url_check_box):
         selected_user = self.getOneSelectedUser()
         if not selected_user: return
-        
-        self.url_manager.downloadUrls(selected_user, self.right_pane_url_list)
+        full_url_check_box
+        self.url_manager.downloadUrls(selected_user, self.right_pane_url_list, full_url_check_box.isChecked())
         self.right_pane_url_list.update()
     
-    def getAllUsersUrl(self):
-        self.url_manager.downloadAllUserUrls(self.user_database_controller.getAllUsers(), self.right_pane_url_list)
+    def getAllUsersUrl(self, full_url_check_box):
+        self.url_manager.downloadAllUserUrls(self.user_database_controller.getAllUsers(), self.right_pane_url_list, full_url_check_box.isChecked())
         self.right_pane_url_list.update()
         
     def showSelectUsersUrls(self):

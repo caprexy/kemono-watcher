@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QHBoxLayout, QWidget, QVBoxLayout, QPushButton
+from PyQt6.QtWidgets import QHBoxLayout, QWidget, QVBoxLayout, QPushButton, QCheckBox
 
 from view.left_pane.components.userListView import UserList
 
@@ -35,14 +35,19 @@ class LeftPane(QWidget):
         
         main_layout.addLayout(user_buttons_layout)
         
+        
         operation_button_layout = QHBoxLayout()
+        full_url_check_box = QCheckBox("Full url check", self)
+        
         get_user_urls_button = QPushButton("Download user's url", self)
         operation_button_layout.addWidget(get_user_urls_button)
-        get_user_urls_button.clicked.connect(self.left_pane_controller.getUsersUrl)
+        get_user_urls_button.clicked.connect(lambda: self.left_pane_controller.getUsersUrl(full_url_check_box) )
         
         get_all_user_urls_button = QPushButton("Download all user's url", self)
         operation_button_layout.addWidget(get_all_user_urls_button)
-        get_all_user_urls_button.clicked.connect(self.left_pane_controller.getAllUsersUrl)
+        get_all_user_urls_button.clicked.connect(lambda: self.left_pane_controller.getAllUsersUrl(full_url_check_box))
+        
+        operation_button_layout.addWidget(full_url_check_box)
         main_layout.addLayout(operation_button_layout)
         
         url_selection_layout = QHBoxLayout()

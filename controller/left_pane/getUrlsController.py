@@ -4,23 +4,23 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from model.userModel import User
 
 from view.right_pane.components.UrlListView import UrlListView
+from view.popups import WarningPopup
 
 from controller.left_pane.kemonoApiController import KemonoApiController
 
 class UrlsManager:
-    def downloadUrls(self, user:User, url_list_view:UrlListView):
+    def downloadUrls(self, user:User, url_list_view:UrlListView, full_url_check: bool):
         dialogue = DownloadingUrlsDialogue(url_list_view)
         
         controller = KemonoApiController(dialogue)
-        controller.generateUserUrls(user, dialogue.update_url_label)
+        controller.scanUserUrls(user, dialogue.update_url_label, full_url_check, dialogue.finished)
         dialogue.exec()
 
-    def downloadAllUserUrls(self, users:[User], url_list_view:UrlListView):
+    def downloadAllUserUrls(self, users:[User], url_list_view:UrlListView, full_url_check: bool):
         dialogue = DownloadingUrlsDialogue(url_list_view)
-        
         controller = KemonoApiController(dialogue)
         for user in users:
-            controller.generateUserUrls(user, dialogue.update_url_label)
+            controller.scanUserUrls(user, dialogue.update_url_label, full_url_check,  dialogue.finished, finish_popup = False)
         dialogue.exec()
 
 class DownloadingUrlsDialogue(QDialog):
