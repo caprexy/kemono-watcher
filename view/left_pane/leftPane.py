@@ -69,7 +69,12 @@ class LeftPane(QWidget):
         
         main_layout.addLayout(url_selection_layout)
         
-        self.left_pane_controller.updateUserList()
+        # Initialize user list with error handling
+        try:
+            self.left_pane_controller.updateUserList()
+        except Exception as e:
+            print(f"Failed to initialize user list: {e}")
+            # Continue without initial user list data
 
     def _connect_context_menu_signals(self):
         """Connect context menu signals to controller methods."""

@@ -41,7 +41,13 @@ class UrlListView(QTableWidget):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)
         
-        self.update()
+        # Initialize with empty data to avoid database issues during startup
+        try:
+            self.update()
+        except Exception as e:
+            print(f"Failed to initialize URL list: {e}")
+            # Set empty table if update fails
+            self.setRowCount(0)
 
     def update(self, urls=None):
         if not urls:
