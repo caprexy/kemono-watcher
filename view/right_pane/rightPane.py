@@ -17,6 +17,15 @@ class RightPane(QWidget):
         
         self.right_pane_controller = RightPaneController(url_list)
         
+        # Connect URL click signal to show user URLs
+        self.url_list.userUrlsRequested.connect(self.right_pane_controller.showUserUrls)
+        
+        # Connect unvisited URLs signal to show user's unvisited URLs
+        self.url_list.userUnvisitedUrlsRequested.connect(self.right_pane_controller.showUserUnvisitedUrls)
+        
+        # Connect URL flip signal to refresh current filter
+        self.url_list.urlsFlipped.connect(self.right_pane_controller._refresh_current_filter)
+        
         url_buttons_layout = QHBoxLayout()
         add_url_button = QPushButton('Add url', self)
         url_buttons_layout.addWidget(add_url_button)

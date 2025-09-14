@@ -49,31 +49,110 @@ class LeftPaneController():
     def getUsersUrl(self, full_url_check_box):
         selected_user = self.getOneSelectedUser()
         if not selected_user: return
-        full_url_check_box
-        self.url_manager.downloadUrls(selected_user, self.right_pane_url_list, full_url_check_box.isChecked())
-        self.right_pane_url_list.update()
+        if hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
+            self.url_manager.downloadUrls(selected_user, self.right_pane_url_list, full_url_check_box.isChecked())
+            self.right_pane_url_list.update()
     
     def getAllUsersUrl(self, full_url_check_box):
-        self.url_manager.downloadAllUserUrls(self.user_database_controller.getAllUsers(), self.right_pane_url_list, full_url_check_box.isChecked())
-        self.right_pane_url_list.update()
+        if hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
+            self.url_manager.downloadAllUserUrls(self.user_database_controller.getAllUsers(), self.right_pane_url_list, full_url_check_box.isChecked())
+            self.right_pane_url_list.update()
         
     def showSelectUsersUrls(self):
-        if self.user_list.selectedRanges() == []: return []
+        if self.user_list.selectedRanges() == []: 
+            # If no selection, try to get the current row from double-click
+            current_row = self.user_list.currentRow()
+            if current_row < 0:
+                return []
+            selected_rows = [current_row]
+        else:
+            selected_range = self.user_list.selectedRanges()[0]
+            selected_rows = range(selected_range.topRow(), selected_range.bottomRow()+1)
         
-        selected_range = self.user_list.selectedRanges()[0]
-        urls = []
-        for row in range(selected_range.bottomRow(), selected_range.topRow()+1):
-            service = self.user_list.item(row, urlValueIndexes.Service.value+1).text()
-            service_id = self.user_list.item(row, urlValueIndexes.Service_id.value+1).text()
-            urls += self.url_database_controller.getUrlsForUser(service, service_id)
-        self.right_pane_url_list.update(urls)
+        # For single user selection, use the filter method to maintain state
+        if len(selected_rows) == 1:
+            row = selected_rows[0]
+            service = self.user_list.item(row, userValueIndexes.Service.value).text()
+            service_id = self.user_list.item(row, userValueIndexes.Service_id.value).text()
+            
+            if hasattr(self, 'right_pane_controller') and self.right_pane_controller:
+                self.right_pane_controller.setFilterUserSpecific(service, service_id)
+            elif hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
+                urls = self.url_database_controller.getUrlsForUser(service, service_id)
+                self.right_pane_url_list.update(urls)
+        else:
+            # For multiple users, combine URLs and use direct update
+            urls = []
+            for row in selected_rows:
+                service = self.user_list.item(row, userValueIndexes.Service.value).text()
+                service_id = self.user_list.item(row, userValueIndexes.Service_id.value).text()
+                urls += self.url_database_controller.getUrlsForUser(service, service_id)
+            
+            if hasattr(self, 'right_pane_controller') and self.right_pane_controller:
+                # Clear filter state for multi-user selection
+                self.right_pane_controller.current_filter_type = None
+                self.right_pane_controller.current_filter_params = None
+                self.right_pane_controller.url_list_widget.update(urls)
+            elif hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
+                self.right_pane_url_list.update(urls)
         
     def showAllUsersUrls(self):
-        self.right_pane_url_list.update()
+        if hasattr(self, 'right_pane_controller') and self.right_pane_controller:
+            self.right_pane_controller.setFilterAll()
+        elif hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
+            self.right_pane_url_list.update()
     
     def showNotVisitedUrls(self):
-        urls = self.url_database_controller.getAllNotVisitedUrls()
-        self.right_pane_url_list.update(urls)
+        if hasattr(self, 'right_pane_controller') and self.right_pane_controller:
+            self.right_pane_controller.setFilterNotVisited()
+        else:
+            urls = self.url_database_controller.getAllNotVisitedUrls()
+            if hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
+                self.right_pane_url_list.update(urls)
+    
+    def showNotVisitedUrlsForSelectedUsers(self):
+        """Show not visited URLs for the currently selected user(s)."""
+        if self.user_list.selectedRanges() == []: 
+            # If no selection, try to get the current row from right-click
+            current_row = self.user_list.currentRow()
+            if current_row < 0:
+                return
+            selected_rows = [current_row]
+        else:
+            selected_range = self.user_list.selectedRanges()[0]
+            selected_rows = range(selected_range.topRow(), selected_range.bottomRow()+1)
+        
+        # For single user selection, use the filter method to maintain state
+        if len(selected_rows) == 1:
+            row = selected_rows[0]
+            service = self.user_list.item(row, userValueIndexes.Service.value).text()
+            service_id = self.user_list.item(row, userValueIndexes.Service_id.value).text()
+            
+            if hasattr(self, 'right_pane_controller') and self.right_pane_controller:
+                self.right_pane_controller.setFilterNotVisitedUserSpecific(service, service_id)
+            else:
+                # Fallback to direct update
+                user_urls = self.url_database_controller.getUrlsForUser(service, service_id)
+                unvisited_urls = [url for url in user_urls if not url.visited]
+                if hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
+                    self.right_pane_url_list.update(unvisited_urls)
+        else:
+            # For multiple users, combine URLs and use direct update
+            urls = []
+            for row in selected_rows:
+                service = self.user_list.item(row, userValueIndexes.Service.value).text()
+                service_id = self.user_list.item(row, userValueIndexes.Service_id.value).text()
+                user_urls = self.url_database_controller.getUrlsForUser(service, service_id)
+                unvisited_urls = [url for url in user_urls if not url.visited]
+                urls += unvisited_urls
+            
+            if hasattr(self, 'right_pane_controller') and self.right_pane_controller:
+                # Clear filter state for multi-user selection
+                self.right_pane_controller.current_filter_type = None
+                self.right_pane_controller.current_filter_params = None
+                self.right_pane_controller.url_list_widget.update(urls)
+            elif hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
+                self.right_pane_url_list.update(urls)
         
         
     def updateUserList(self):

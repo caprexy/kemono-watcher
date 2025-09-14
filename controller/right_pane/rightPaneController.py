@@ -14,11 +14,15 @@ class RightPaneController():
     def __init__(self, url_list_widget:UrlListView) -> None:
         self.url_list_widget = url_list_widget
         self.url_database_controller = UrlDatabaseController()
+        
+        # Track current filter state
+        self.current_filter_type = None  # 'all', 'user_specific', 'not_visited', 'not_visited_user_specific'
+        self.current_filter_params = None  # Store parameters for the current filter
     
     def addUrl(self):
         add_url_dialogue = AddUrlDialogue()
         add_url_dialogue.exec()
-        self.updateUrlList()
+        self._refresh_current_filter()
     
     def deleteUrl(self):
         urls = self.getSelectedUrls()
@@ -33,7 +37,7 @@ class RightPaneController():
         
         for url in urls:
             self.url_database_controller.deleteUrl(url.unique_id)
-        self.url_list_widget.update()
+        self._refresh_current_filter()
     
     def openUrls(self):
         urls = self.getSelectedUrls()
@@ -48,10 +52,73 @@ class RightPaneController():
         
         for url in urls:
             self.url_database_controller.flipUrl(url)
-        self.url_list_widget.update()
+        self._refresh_current_filter()
         
     def updateUrlList(self):
+        """Update URL list maintaining current filter."""
+        self._refresh_current_filter()
+    
+    def setFilterAll(self):
+        """Set filter to show all URLs."""
+        self.current_filter_type = 'all'
+        self.current_filter_params = None
         self.url_list_widget.update()
+    
+    def setFilterUserSpecific(self, service, service_id):
+        """Set filter to show URLs for specific user."""
+        self.current_filter_type = 'user_specific'
+        self.current_filter_params = {'service': service, 'service_id': service_id}
+        urls = self.url_database_controller.getUrlsForUser(service, service_id)
+        self.url_list_widget.update(urls)
+    
+    def setFilterNotVisited(self):
+        """Set filter to show all not visited URLs."""
+        self.current_filter_type = 'not_visited'
+        self.current_filter_params = None
+        urls = self.url_database_controller.getAllNotVisitedUrls()
+        self.url_list_widget.update(urls)
+    
+    def setFilterNotVisitedUserSpecific(self, service, service_id):
+        """Set filter to show not visited URLs for specific user."""
+        self.current_filter_type = 'not_visited_user_specific'
+        self.current_filter_params = {'service': service, 'service_id': service_id}
+        user_urls = self.url_database_controller.getUrlsForUser(service, service_id)
+        unvisited_urls = [url for url in user_urls if not url.visited]
+        self.url_list_widget.update(unvisited_urls)
+    
+    def showUserUrls(self, service, service_id):
+        """Show all URLs for the specified user (triggered by clicking on a URL)."""
+        self.setFilterUserSpecific(service, service_id)
+    
+    def showUserUnvisitedUrls(self, service, service_id):
+        """Show unvisited URLs for the specified user (triggered by context menu)."""
+        self.setFilterNotVisitedUserSpecific(service, service_id)
+    
+    def _refresh_current_filter(self):
+        """Refresh the current filter to maintain the view after changes."""
+        if self.current_filter_type == 'all':
+            self.url_list_widget.update()
+        elif self.current_filter_type == 'user_specific':
+            if self.current_filter_params:
+                urls = self.url_database_controller.getUrlsForUser(
+                    self.current_filter_params['service'], 
+                    self.current_filter_params['service_id']
+                )
+                self.url_list_widget.update(urls)
+        elif self.current_filter_type == 'not_visited':
+            urls = self.url_database_controller.getAllNotVisitedUrls()
+            self.url_list_widget.update(urls)
+        elif self.current_filter_type == 'not_visited_user_specific':
+            if self.current_filter_params:
+                user_urls = self.url_database_controller.getUrlsForUser(
+                    self.current_filter_params['service'], 
+                    self.current_filter_params['service_id']
+                )
+                unvisited_urls = [url for url in user_urls if not url.visited]
+                self.url_list_widget.update(unvisited_urls)
+        else:
+            # Default to all URLs if no filter is set
+            self.url_list_widget.update()
     
     def getSelectedUrls(self, one_only=False)->list[Url]:
         selected_items = self.url_list_widget.selectedItems()

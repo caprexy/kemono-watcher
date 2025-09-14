@@ -59,3 +59,14 @@ dev
 # Ignore system-specific files
 .DS_Store
 Thumbs.db
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+urlDatabase.db
+userDatabase.db
+
+# Application logs
+*.log
+kemono_tracker.log

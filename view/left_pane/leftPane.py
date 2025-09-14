@@ -13,11 +13,15 @@ class LeftPane(QWidget):
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
 
-        user_list = UserList()
-        self.user_list = user_list
-        main_layout.addWidget(user_list)
+        # Create user list and make it accessible
+        self.user_list = UserList()
+        main_layout.addWidget(self.user_list)
         
-        self.left_pane_controller = LeftPaneController(user_list)
+        # Create controller and make it accessible
+        self.left_pane_controller = LeftPaneController(self.user_list)
+        
+        # Connect context menu signals
+        self._connect_context_menu_signals()
 
         user_buttons_layout = QHBoxLayout()
 
@@ -66,4 +70,25 @@ class LeftPane(QWidget):
         main_layout.addLayout(url_selection_layout)
         
         self.left_pane_controller.updateUserList()
+
+    def _connect_context_menu_signals(self):
+        """Connect context menu signals to controller methods."""
+        self.user_list.showNotVisitedRequested.connect(
+            self.left_pane_controller.showNotVisitedUrlsForSelectedUsers
+        )
+        self.user_list.downloadUserUrlsRequested.connect(
+            self._handle_download_urls_request
+        )
+
+    def _handle_download_urls_request(self, full_check: bool):
+        """Handle download URLs request from context menu."""
+        # Create a temporary checkbox object to pass the full_check state
+        class TempCheckBox:
+            def __init__(self, checked: bool):
+                self._checked = checked
+            def isChecked(self):
+                return self._checked
+        
+        temp_checkbox = TempCheckBox(full_check)
+        self.left_pane_controller.getUsersUrl(temp_checkbox)
         
