@@ -66,32 +66,22 @@ class KemonoTrackerApp(QMainWindow):
         try:
             # Create main panes with individual error handling
             try:
-                print("Creating left pane...")
                 self.left_pane = LeftPane()
-                print("Left pane created successfully")
             except Exception as e:
-                print(f"Failed to create left pane: {e}")
                 raise
             
             try:
-                print("Creating right pane...")
                 self.right_pane = RightPane()
-                print("Right pane created successfully")
             except Exception as e:
-                print(f"Failed to create right pane: {e}")
                 raise
             
             # Connect the panes so left pane can update right pane
             try:
-                print("Connecting panes...")
                 self._connect_panes()
-                print("Panes connected successfully")
             except Exception as e:
-                print(f"Failed to connect panes: {e}")
                 raise
             
             # Create splitter with proper orientation
-            print("Creating splitter...")
             self.splitter = QSplitter(Qt.Orientation.Horizontal, self)
             self.splitter.addWidget(self.left_pane)
             self.splitter.addWidget(self.right_pane)
@@ -120,21 +110,11 @@ class KemonoTrackerApp(QMainWindow):
                     self.setWindowIcon(QIcon(str(icon_path)))
             except Exception as e:
                 # Icon loading failed, continue without icon
-                print(f"Failed to load application icon: {e}")
-                
-            print("UI initialization completed successfully")
+                pass
                 
         except Exception as e:
-            error_msg = f"Failed to initialize UI: {e}"
-            print(error_msg)
-            try:
-                self.logger.error(error_msg)
-            except:
-                pass
-            try:
-                self._show_error("Initialization Error", f"Failed to initialize application: {e}")
-            except:
-                pass
+            self.logger.error(f"Failed to initialize UI: {e}")
+            self._show_error("Initialization Error", f"Failed to initialize application: {e}")
             raise
 
     def _connect_panes(self) -> None:
@@ -151,18 +131,10 @@ class KemonoTrackerApp(QMainWindow):
     def _on_user_double_clicked(self) -> None:
         """Handle double-click on user list to show their URLs."""
         try:
-            print("=== Double-click on user detected ===")
-            self.logger.info("User double-clicked, attempting to show URLs")
             self.left_pane.left_pane_controller.showSelectUsersUrls()
             self.status_bar.showMessage("Loaded URLs for selected user", 2000)
-            print("=== User URLs loaded successfully ===")
         except Exception as e:
-            error_msg = f"Error loading user URLs: {e}"
-            print(f"=== ERROR: {error_msg} ===")
-            print(f"Exception type: {type(e)}")
-            import traceback
-            print(f"Traceback: {traceback.format_exc()}")
-            self.logger.error(error_msg)
+            self.logger.error(f"Error loading user URLs: {e}")
             self._show_error("Error", f"Failed to load user URLs: {e}")
 
 

@@ -86,35 +86,18 @@ class UrlDatabaseController:
     
 
     def getUrlsForUser(self, service: str, service_id: str):
-        try:
-            connection, cursor = self.get_connection_n_cursor()
-            
-            query = f"""
-            SELECT *
-            FROM {urlDatabaseConstants.url_table_name}
-            WHERE {urlDatabaseConstants.service} = ? AND {urlDatabaseConstants.service_id} = ?;
-            """
-            
-            cursor.execute(query, (service, service_id))
-            res = cursor.fetchall()
-            print(f"Database: Found {len(res)} URLs for {service}/{service_id}")
-            
-            urls = []
-            for url_row in res:
-                try:
-                    url_obj = self.sqlResRowToUser(url_row)
-                    urls.append(url_obj)
-                except Exception as e:
-                    print(f"ERROR processing database row: {e}")
-                    continue
-                    
-            return urls
-            
-        except Exception as e:
-            print(f"ERROR in getUrlsForUser: {e}")
-            import traceback
-            print(f"Traceback: {traceback.format_exc()}")
-            raise
+        connection, cursor = self.get_connection_n_cursor()
+        query = f"""
+        SELECT *
+        FROM {urlDatabaseConstants.url_table_name}
+        WHERE {urlDatabaseConstants.service} = ? AND {urlDatabaseConstants.service_id} = ?;
+        """
+        cursor.execute(query, (service, service_id))
+        res = cursor.fetchall()
+        urls = []
+        for url_row in res:
+            urls.append(self.sqlResRowToUser(url_row))
+        return urls
     
     def getAllNotVisitedUrls(self):
         connection, cursor = self.get_connection_n_cursor()
@@ -143,29 +126,18 @@ class UrlDatabaseController:
         connection.commit()
         
     def sqlResRowToUser(self, url:list):
-        try:
-            # Database columns: uniqueId, url, postId, visited, visitedTime, service, serviceId, username
-            # Url constructor: username, service, service_id, post_id, url, visited, visited_time, unique_id
-            result = Url(
-                username=url[7],      # username
-                service=url[5],       # service  
-                service_id=url[6],    # service_id
-                post_id=url[2],       # post_id
-                url=url[1],           # url
-                visited=url[3],       # visited
-                visited_time=url[4],  # visited_time
-                unique_id=url[0],     # unique_id
-            )
-            return result
-        except Exception as e:
-            print(f"ERROR in sqlResRowToUser: {e}")
-            print(f"Row data: {url}")
-            print(f"Row length: {len(url)}")
-            for i, val in enumerate(url):
-                print(f"  [{i}]: {val} (type: {type(val)})")
-            import traceback
-            print(f"Traceback: {traceback.format_exc()}")
-            raise
+        # Database columns: uniqueId, url, postId, visited, visitedTime, service, serviceId, username
+        # Url constructor: username, service, service_id, post_id, url, visited, visited_time, unique_id
+        return Url(
+            username=url[7],      # username
+            service=url[5],       # service  
+            service_id=url[6],    # service_id
+            post_id=url[2],       # post_id
+            url=url[1],           # url
+            visited=url[3],       # visited
+            visited_time=url[4],  # visited_time
+            unique_id=url[0],     # unique_id
+        )
         
     def doesUrlExist(self, url:str):
         connection, cursor = self.get_connection_n_cursor()

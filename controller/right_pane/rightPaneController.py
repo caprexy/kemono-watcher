@@ -66,20 +66,10 @@ class RightPaneController():
     
     def setFilterUserSpecific(self, service, service_id):
         """Set filter to show URLs for specific user."""
-        try:
-            print(f"Setting filter for user: {service}/{service_id}")
-            self.current_filter_type = 'user_specific'
-            self.current_filter_params = {'service': service, 'service_id': service_id}
-            
-            urls = self.url_database_controller.getUrlsForUser(service, service_id)
-            self.url_list_widget.update(urls)
-            print("Filter applied successfully")
-            
-        except Exception as e:
-            print(f"ERROR in setFilterUserSpecific: {e}")
-            import traceback
-            print(f"Traceback: {traceback.format_exc()}")
-            raise
+        self.current_filter_type = 'user_specific'
+        self.current_filter_params = {'service': service, 'service_id': service_id}
+        urls = self.url_database_controller.getUrlsForUser(service, service_id)
+        self.url_list_widget.update(urls)
     
     def setFilterNotVisited(self):
         """Set filter to show all not visited URLs."""

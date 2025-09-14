@@ -59,99 +59,53 @@ class LeftPaneController():
             self.right_pane_url_list.update()
         
     def showSelectUsersUrls(self):
-        print("=== showSelectUsersUrls called ===")
-        try:
-            if self.user_list.selectedRanges() == []: 
-                # If no selection, try to get the current row from double-click
-                current_row = self.user_list.currentRow()
-                print(f"No selection, current row: {current_row}")
-                if current_row < 0:
-                    print("No valid current row, returning")
-                    return []
-                selected_rows = [current_row]
-            else:
-                selected_range = self.user_list.selectedRanges()[0]
-                selected_rows = range(selected_range.topRow(), selected_range.bottomRow()+1)
-                print(f"Selected range: {selected_range.topRow()} to {selected_range.bottomRow()}")
+        if self.user_list.selectedRanges() == []: 
+            # If no selection, try to get the current row from double-click
+            current_row = self.user_list.currentRow()
+            if current_row < 0:
+                return []
+            selected_rows = [current_row]
+        else:
+            selected_range = self.user_list.selectedRanges()[0]
+            selected_rows = range(selected_range.topRow(), selected_range.bottomRow()+1)
+        
+        # For single user selection, use the filter method to maintain state
+        if len(selected_rows) == 1:
+            row = selected_rows[0]
             
-            print(f"Selected rows: {list(selected_rows)}")
+            service_item = self.user_list.item(row, userValueIndexes.Service.value)
+            service_id_item = self.user_list.item(row, userValueIndexes.Service_id.value)
             
-            # For single user selection, use the filter method to maintain state
-            if len(selected_rows) == 1:
-                row = selected_rows[0]
-                print(f"Processing single user at row {row}")
+            if service_item is None or service_id_item is None:
+                return
+            
+            service = service_item.text()
+            service_id = service_id_item.text()
+            
+            if hasattr(self, 'right_pane_controller') and self.right_pane_controller:
+                self.right_pane_controller.setFilterUserSpecific(service, service_id)
+            elif hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
+                urls = self.url_database_controller.getUrlsForUser(service, service_id)
+                self.right_pane_url_list.update(urls)
                 
+        else:
+            # For multiple users, combine URLs and use direct update
+            urls = []
+            for row in selected_rows:
                 try:
-                    service_item = self.user_list.item(row, userValueIndexes.Service.value)
-                    service_id_item = self.user_list.item(row, userValueIndexes.Service_id.value)
-                    
-                    print(f"Service item: {service_item}")
-                    print(f"Service ID item: {service_id_item}")
-                    
-                    if service_item is None or service_id_item is None:
-                        print("ERROR: Service or Service ID item is None")
-                        return
-                    
-                    service = service_item.text()
-                    service_id = service_id_item.text()
-                    
-                    print(f"Service: '{service}', Service ID: '{service_id}'")
-                    print(f"Service type: {type(service)}, Service ID type: {type(service_id)}")
-                    
+                    service = self.user_list.item(row, userValueIndexes.Service.value).text()
+                    service_id = self.user_list.item(row, userValueIndexes.Service_id.value).text()
+                    urls += self.url_database_controller.getUrlsForUser(service, service_id)
                 except Exception as e:
-                    print(f"ERROR getting service/service_id: {e}")
-                    import traceback
-                    print(f"Traceback: {traceback.format_exc()}")
-                    return
-                
-                try:
-                    if hasattr(self, 'right_pane_controller') and self.right_pane_controller:
-                        print("Using right_pane_controller.setFilterUserSpecific")
-                        self.right_pane_controller.setFilterUserSpecific(service, service_id)
-                    elif hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
-                        print("Using right_pane_url_list.update")
-                        urls = self.url_database_controller.getUrlsForUser(service, service_id)
-                        print(f"Got {len(urls)} URLs from database")
-                        self.right_pane_url_list.update(urls)
-                    else:
-                        print("ERROR: No right pane controller or URL list available")
-                        
-                except Exception as e:
-                    print(f"ERROR in right pane update: {e}")
-                    import traceback
-                    print(f"Traceback: {traceback.format_exc()}")
-                    raise
-                    
-            else:
-                print(f"Processing multiple users: {len(selected_rows)} rows")
-                # For multiple users, combine URLs and use direct update
-                urls = []
-                for row in selected_rows:
-                    try:
-                        service = self.user_list.item(row, userValueIndexes.Service.value).text()
-                        service_id = self.user_list.item(row, userValueIndexes.Service_id.value).text()
-                        print(f"Row {row}: service='{service}', service_id='{service_id}'")
-                        urls += self.url_database_controller.getUrlsForUser(service, service_id)
-                    except Exception as e:
-                        print(f"ERROR processing row {row}: {e}")
-                        continue
-                
-                if hasattr(self, 'right_pane_controller') and self.right_pane_controller:
-                    # Clear filter state for multi-user selection
-                    self.right_pane_controller.current_filter_type = None
-                    self.right_pane_controller.current_filter_params = None
-                    self.right_pane_controller.url_list_widget.update(urls)
-                elif hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
-                    self.right_pane_url_list.update(urls)
-                    
-            print("=== showSelectUsersUrls completed successfully ===")
+                    continue
             
-        except Exception as e:
-            print(f"=== ERROR in showSelectUsersUrls: {e} ===")
-            print(f"Exception type: {type(e)}")
-            import traceback
-            print(f"Traceback: {traceback.format_exc()}")
-            raise
+            if hasattr(self, 'right_pane_controller') and self.right_pane_controller:
+                # Clear filter state for multi-user selection
+                self.right_pane_controller.current_filter_type = None
+                self.right_pane_controller.current_filter_params = None
+                self.right_pane_controller.url_list_widget.update(urls)
+            elif hasattr(self, 'right_pane_url_list') and self.right_pane_url_list:
+                self.right_pane_url_list.update(urls)
         
     def showAllUsersUrls(self):
         if hasattr(self, 'right_pane_controller') and self.right_pane_controller:
