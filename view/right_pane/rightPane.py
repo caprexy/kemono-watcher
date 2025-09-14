@@ -26,7 +26,33 @@ class RightPane(QWidget):
         # Connect URL flip signal to refresh current filter and user list
         self.url_list.urlsFlipped.connect(self.right_pane_controller._refresh_after_url_change)
         
-        # Flip URL status button - prominent at the top
+        # Open URLs button - primary action at the top
+        open_urls_button = QPushButton('Open URLs', self)
+        open_urls_button.clicked.connect(self.right_pane_controller.openUrls)
+        
+        # Style the open button - larger and blue
+        open_urls_button.setStyleSheet("""
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                font-weight: bold;
+                font-size: 14px;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+                min-height: 30px;
+            }
+            QPushButton:hover {
+                background-color: #45A049;
+            }
+            QPushButton:pressed {
+                background-color: #3E8E41;
+            }
+        """)
+        
+        main_layout.addWidget(open_urls_button)
+        
+        # Flip URL status button - second most important
         flip_urls_button = QPushButton('Flip URL Visit Status', self)
         flip_urls_button.clicked.connect(self.right_pane_controller.flipUrl)
         
@@ -63,11 +89,3 @@ class RightPane(QWidget):
         delete_url_button.clicked.connect(self.right_pane_controller.deleteUrl)
         
         main_layout.addLayout(url_buttons_layout)
-        
-        # Other action buttons
-        action_buttons_layout = QHBoxLayout()
-        open_urls_button = QPushButton('Open urls', self)
-        action_buttons_layout.addWidget(open_urls_button)
-        open_urls_button.clicked.connect(self.right_pane_controller.openUrls)
-        
-        main_layout.addLayout(action_buttons_layout)
