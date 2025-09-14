@@ -137,8 +137,15 @@ class KemonoTrackerApp(QMainWindow):
                 header = self.left_pane.user_list.horizontalHeader()
                 column_sizes = []
                 for i in range(header.count()):
-                    column_sizes.append(header.sectionSize(i))
-                self.settings.setValue("userTableColumnSizes", column_sizes)
+                    size = header.sectionSize(i)
+                    # Ensure we save valid positive integers
+                    if isinstance(size, int) and size > 0:
+                        column_sizes.append(size)
+                    else:
+                        column_sizes.append(100)  # Default size
+                
+                if column_sizes:  # Only save if we have valid data
+                    self.settings.setValue("userTableColumnSizes", column_sizes)
         except Exception as e:
             self.logger.warning(f"Failed to save user table column sizes: {e}")
 
@@ -149,8 +156,15 @@ class KemonoTrackerApp(QMainWindow):
                 header = self.right_pane.url_list.horizontalHeader()
                 column_sizes = []
                 for i in range(header.count()):
-                    column_sizes.append(header.sectionSize(i))
-                self.settings.setValue("urlTableColumnSizes", column_sizes)
+                    size = header.sectionSize(i)
+                    # Ensure we save valid positive integers
+                    if isinstance(size, int) and size > 0:
+                        column_sizes.append(size)
+                    else:
+                        column_sizes.append(100)  # Default size
+                
+                if column_sizes:  # Only save if we have valid data
+                    self.settings.setValue("urlTableColumnSizes", column_sizes)
         except Exception as e:
             self.logger.warning(f"Failed to save URL table column sizes: {e}")
 
@@ -160,20 +174,30 @@ class KemonoTrackerApp(QMainWindow):
             # Restore user table column sizes
             if self.left_pane and self.left_pane.user_list:
                 column_sizes = self.settings.value("userTableColumnSizes")
-                if column_sizes:
+                if column_sizes and isinstance(column_sizes, (list, tuple)):
                     header = self.left_pane.user_list.horizontalHeader()
                     for i, size in enumerate(column_sizes):
                         if i < header.count():
-                            header.resizeSection(i, int(size))
+                            try:
+                                size_int = int(size) if size is not None else 100
+                                if size_int > 0:  # Ensure positive size
+                                    header.resizeSection(i, size_int)
+                            except (ValueError, TypeError):
+                                continue
             
             # Restore URL table column sizes
             if self.right_pane and self.right_pane.url_list:
                 column_sizes = self.settings.value("urlTableColumnSizes")
-                if column_sizes:
+                if column_sizes and isinstance(column_sizes, (list, tuple)):
                     header = self.right_pane.url_list.horizontalHeader()
                     for i, size in enumerate(column_sizes):
                         if i < header.count():
-                            header.resizeSection(i, int(size))
+                            try:
+                                size_int = int(size) if size is not None else 100
+                                if size_int > 0:  # Ensure positive size
+                                    header.resizeSection(i, size_int)
+                            except (ValueError, TypeError):
+                                continue
                             
         except Exception as e:
             self.logger.warning(f"Failed to restore table column sizes: {e}")
@@ -200,6 +224,12 @@ class KemonoTrackerApp(QMainWindow):
         reset_columns_action = QAction('Reset &Column Sizes', self)
         reset_columns_action.triggered.connect(self._reset_column_sizes)
         view_menu.addAction(reset_columns_action)
+        
+        view_menu.addSeparator()
+        
+        clear_settings_action = QAction('Clear All Settings', self)
+        clear_settings_action.triggered.connect(self._clear_corrupted_settings)
+        view_menu.addAction(clear_settings_action)
         
         # Help menu
         help_menu = menubar.addMenu('&Help')
@@ -254,6 +284,26 @@ class KemonoTrackerApp(QMainWindow):
             self.logger.error(f"Failed to reset column sizes: {e}")
             self._show_error("Error", f"Failed to reset column sizes: {e}")
 
+    def _clear_corrupted_settings(self) -> None:
+        """Clear potentially corrupted settings."""
+        try:
+            # Clear all saved settings that might cause issues
+            settings_to_clear = [
+                "userTableColumnSizes",
+                "urlTableColumnSizes", 
+                "splitterSizes",
+                "geometry",
+                "windowState"
+            ]
+            
+            for setting in settings_to_clear:
+                self.settings.remove(setting)
+            
+            self.logger.info("Cleared potentially corrupted settings")
+            
+        except Exception as e:
+            self.logger.warning(f"Failed to clear settings: {e}")
+
     def _show_about(self) -> None:
         """Show the about dialog."""
         QMessageBox.about(
@@ -299,8 +349,23 @@ class KemonoTrackerApp(QMainWindow):
                 self.restoreState(window_state)
                 
             splitter_sizes = self.settings.value("splitterSizes")
-            if splitter_sizes and self.splitter:
-                self.splitter.setSizes([int(size) for size in splitter_sizes])
+            if splitter_sizes and self.splitter and isinstance(splitter_sizes, (list, tuple)):
+                try:
+                    # Convert to integers safely
+                    sizes = []
+                    for size in splitter_sizes:
+                        try:
+                            size_int = int(size) if size is not None else 320
+                            sizes.append(max(size_int, 50))  # Minimum size of 50
+                        except (ValueError, TypeError):
+                            sizes.append(320)  # Default size
+                    
+                    if len(sizes) >= 2:
+                        self.splitter.setSizes(sizes)
+                    else:
+                        self.splitter.setSizes([320, 480])
+                except Exception:
+                    self.splitter.setSizes([320, 480])
                 
         except Exception as e:
             self.logger.warning(f"Failed to restore window state: {e}")
