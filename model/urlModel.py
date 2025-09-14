@@ -9,7 +9,7 @@ class Url:
                 username:str,
                 service:str,
                 service_id:str,
-                post_id:int,
+                post_id,  # Can be int or str (e.g., 'p-34234')
                 url:str,
                 visited:bool,
                 visited_time:date,

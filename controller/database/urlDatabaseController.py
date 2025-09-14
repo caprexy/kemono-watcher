@@ -43,7 +43,7 @@ class UrlDatabaseController:
         cursor.execute(urlDatabaseConstants.userTableCreateCommand)
         connection.commit()
 
-    def addUrl(self, url:str, visited:bool, visited_time:date, service:str, service_id:str, username:str, post_id:int):
+    def addUrl(self, url:str, visited:bool, visited_time:date, service:str, service_id:str, username:str, post_id):
         connection, cursor = self.get_connection_n_cursor()
         cursor.execute('INSERT INTO ' + 
                             urlDatabaseConstants.url_table_name + 

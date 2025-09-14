@@ -112,17 +112,44 @@ class UrlListView(QTableWidget):
             
             print(f"Sorting: {len(unvisited_urls)} unvisited, {len(visited_urls)} visited")
             
-            # Sort each group by post_id with safe type conversion
+            # Sort each group by post_id with safe handling of prefixed IDs
+            def safe_post_id_sort_key(url):
+                """Extract numeric part from post_id for sorting, handling prefixes like 'p-'."""
+                try:
+                    post_id = url.post_id
+                    if post_id is None:
+                        return 0
+                    
+                    # Convert to string first in case it's already an int
+                    post_id_str = str(post_id)
+                    
+                    # Handle prefixed post IDs like 'p-34234'
+                    if post_id_str.startswith('p-'):
+                        return int(post_id_str[2:])  # Remove 'p-' prefix
+                    elif '-' in post_id_str:
+                        # Handle other dash-separated formats, use the numeric part
+                        parts = post_id_str.split('-')
+                        for part in parts:
+                            if part.isdigit():
+                                return int(part)
+                        return 0
+                    else:
+                        # Try direct conversion
+                        return int(post_id_str)
+                except (ValueError, TypeError, AttributeError):
+                    # If all else fails, return 0 for consistent sorting
+                    return 0
+            
             try:
-                unvisited_urls.sort(key=lambda url: int(url.post_id) if url.post_id is not None else 0, reverse=True)
-                visited_urls.sort(key=lambda url: int(url.post_id) if url.post_id is not None else 0, reverse=True)
+                unvisited_urls.sort(key=safe_post_id_sort_key, reverse=True)
+                visited_urls.sort(key=safe_post_id_sort_key, reverse=True)
             except Exception as e:
                 print(f"ERROR in URL sorting: {e}")
-                # If sorting fails, check the first few URLs for type issues
+                # If sorting still fails, show some sample post_ids
                 if unvisited_urls:
-                    print(f"Sample unvisited post_id: {unvisited_urls[0].post_id} (type: {type(unvisited_urls[0].post_id)})")
+                    print(f"Sample unvisited post_id: {unvisited_urls[0].post_id}")
                 if visited_urls:
-                    print(f"Sample visited post_id: {visited_urls[0].post_id} (type: {type(visited_urls[0].post_id)})")
+                    print(f"Sample visited post_id: {visited_urls[0].post_id}")
                 raise
             
             return unvisited_urls + visited_urls

@@ -14,7 +14,7 @@ userTableCreateCommand = f'''
             CREATE TABLE IF NOT EXISTS {url_table_name} (
                 {unique_id} INTEGER PRIMARY KEY,
                 {url} TEXT NOT NULL,
-                {post_id} INTEGER NOT NULL, 
+                {post_id} TEXT NOT NULL, 
                 {visited} BOOLEAN NOT NULL,
                 {visited_time} DATE,
                 {service} TEXT NOT NULL,
