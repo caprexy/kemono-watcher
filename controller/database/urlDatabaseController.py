@@ -86,46 +86,32 @@ class UrlDatabaseController:
     
 
     def getUrlsForUser(self, service: str, service_id: str):
-        print(f"=== getUrlsForUser called ===")
-        print(f"Service: '{service}' (type: {type(service)})")
-        print(f"Service ID: '{service_id}' (type: {type(service_id)})")
-        
         try:
             connection, cursor = self.get_connection_n_cursor()
-            print("Database connection obtained")
             
             query = f"""
             SELECT *
             FROM {urlDatabaseConstants.url_table_name}
             WHERE {urlDatabaseConstants.service} = ? AND {urlDatabaseConstants.service_id} = ?;
             """
-            print(f"Executing query: {query}")
-            print(f"Query parameters: service='{service}', service_id='{service_id}'")
             
             cursor.execute(query, (service, service_id))
             res = cursor.fetchall()
-            print(f"Query returned {len(res)} rows")
+            print(f"Database: Found {len(res)} URLs for {service}/{service_id}")
             
             urls = []
-            for i, url_row in enumerate(res):
+            for url_row in res:
                 try:
-                    print(f"Processing row {i}: {url_row}")
                     url_obj = self.sqlResRowToUser(url_row)
-                    print(f"Created URL object: {url_obj}")
                     urls.append(url_obj)
                 except Exception as e:
-                    print(f"ERROR processing row {i}: {e}")
-                    print(f"Row data: {url_row}")
-                    import traceback
-                    print(f"Traceback: {traceback.format_exc()}")
+                    print(f"ERROR processing database row: {e}")
                     continue
                     
-            print(f"=== getUrlsForUser returning {len(urls)} URLs ===")
             return urls
             
         except Exception as e:
-            print(f"=== ERROR in getUrlsForUser: {e} ===")
-            print(f"Exception type: {type(e)}")
+            print(f"ERROR in getUrlsForUser: {e}")
             import traceback
             print(f"Traceback: {traceback.format_exc()}")
             raise
@@ -157,12 +143,6 @@ class UrlDatabaseController:
         connection.commit()
         
     def sqlResRowToUser(self, url:list):
-        print(f"=== sqlResRowToUser called ===")
-        print(f"Raw database row: {url}")
-        print(f"Row length: {len(url)}")
-        for i, val in enumerate(url):
-            print(f"  [{i}]: {val} (type: {type(val)})")
-        
         try:
             # Database columns: uniqueId, url, postId, visited, visitedTime, service, serviceId, username
             # Url constructor: username, service, service_id, post_id, url, visited, visited_time, unique_id
@@ -176,11 +156,13 @@ class UrlDatabaseController:
                 visited_time=url[4],  # visited_time
                 unique_id=url[0],     # unique_id
             )
-            print(f"Created Url object successfully: {result}")
             return result
         except Exception as e:
-            print(f"=== ERROR in sqlResRowToUser: {e} ===")
-            print(f"Exception type: {type(e)}")
+            print(f"ERROR in sqlResRowToUser: {e}")
+            print(f"Row data: {url}")
+            print(f"Row length: {len(url)}")
+            for i, val in enumerate(url):
+                print(f"  [{i}]: {val} (type: {type(val)})")
             import traceback
             print(f"Traceback: {traceback.format_exc()}")
             raise

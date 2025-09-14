@@ -50,52 +50,88 @@ class UrlListView(QTableWidget):
             self.setRowCount(0)
 
     def update(self, urls=None):
-        if not urls:
-            urls = self.url_database_controller.getAllUrls()
-        
-        # Sort URLs to prioritize unvisited ones at the top
-        urls = self._sort_urls_by_visited_status(urls)
-        
-        self.setRowCount(0)
-        self.setRowCount(len(urls))
+        try:
+            if not urls:
+                urls = self.url_database_controller.getAllUrls()
+            
+            print(f"UrlListView: Processing {len(urls)} URLs")
+            
+            # Sort URLs to prioritize unvisited ones at the top
+            urls = self._sort_urls_by_visited_status(urls)
+            
+            self.setRowCount(0)
+            self.setRowCount(len(urls))
 
-        self.setSortingEnabled(False) #https://stackoverflow.com/questions/7960505/strange-qtablewidget-behavior-not-all-cells-populated-after-sorting-followed-b
-        for row, url in enumerate(urls):
-            visited = False
-            for col, val in enumerate(url.values_to_display()):
-                if val is visited_text:
-                    visited = True
-                if type(val) is int:
-                    table_item =  QTableWidgetItem()
-                    table_item.setData(Qt.ItemDataRole.DisplayRole, val)
-                else:
-                    table_item =  QTableWidgetItem(str(val))
-                self.setItem(row, col, table_item)
-            if visited:
-                self.set_row_background_color(self, row, QColor(102, 204, 102))
-            else:
-                self.set_row_background_color(self, row, QColor(255, 102, 102))
-                
-        self.setSortingEnabled(True)
-        # Don't auto-sort after loading since we want to maintain our custom order
-        # Users can still manually sort by clicking column headers if needed
-        
-        # Scroll to the top after updating content
-        self.scrollToTop()
+            self.setSortingEnabled(False) #https://stackoverflow.com/questions/7960505/strange-qtablewidget-behavior-not-all-cells-populated-after-sorting-followed-b
+            
+            for row, url in enumerate(urls):
+                try:
+                    visited = False
+                    values = url.values_to_display()
+                    
+                    for col, val in enumerate(values):
+                        if val is visited_text:
+                            visited = True
+                        if type(val) is int:
+                            table_item =  QTableWidgetItem()
+                            table_item.setData(Qt.ItemDataRole.DisplayRole, val)
+                        else:
+                            table_item =  QTableWidgetItem(str(val))
+                        self.setItem(row, col, table_item)
+                        
+                    if visited:
+                        self.set_row_background_color(self, row, QColor(102, 204, 102))
+                    else:
+                        self.set_row_background_color(self, row, QColor(255, 102, 102))
+                        
+                except Exception as e:
+                    print(f"ERROR processing row {row}: {e}")
+                    continue
+                    
+            self.setSortingEnabled(True)
+            # Don't auto-sort after loading since we want to maintain our custom order
+            # Users can still manually sort by clicking column headers if needed
+            
+            # Scroll to the top after updating content
+            self.scrollToTop()
+            print("UrlListView: Update completed successfully")
+            
+        except Exception as e:
+            print(f"ERROR in UrlListView.update: {e}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
+            raise
         
     
     def _sort_urls_by_visited_status(self, urls):
         """Sort URLs to show unvisited ones first, then visited ones."""
-        # Separate unvisited and visited URLs
-        unvisited_urls = [url for url in urls if not url.visited]
-        visited_urls = [url for url in urls if url.visited]
-        
-        # Sort each group by post_id (or any other criteria you prefer)
-        unvisited_urls.sort(key=lambda url: url.post_id, reverse=True)  # Newest first
-        visited_urls.sort(key=lambda url: url.post_id, reverse=True)    # Newest first
-        
-        # Return unvisited first, then visited
-        return unvisited_urls + visited_urls
+        try:
+            # Separate unvisited and visited URLs
+            unvisited_urls = [url for url in urls if not url.visited]
+            visited_urls = [url for url in urls if url.visited]
+            
+            print(f"Sorting: {len(unvisited_urls)} unvisited, {len(visited_urls)} visited")
+            
+            # Sort each group by post_id with safe type conversion
+            try:
+                unvisited_urls.sort(key=lambda url: int(url.post_id) if url.post_id is not None else 0, reverse=True)
+                visited_urls.sort(key=lambda url: int(url.post_id) if url.post_id is not None else 0, reverse=True)
+            except Exception as e:
+                print(f"ERROR in URL sorting: {e}")
+                # If sorting fails, check the first few URLs for type issues
+                if unvisited_urls:
+                    print(f"Sample unvisited post_id: {unvisited_urls[0].post_id} (type: {type(unvisited_urls[0].post_id)})")
+                if visited_urls:
+                    print(f"Sample visited post_id: {visited_urls[0].post_id} (type: {type(visited_urls[0].post_id)})")
+                raise
+            
+            return unvisited_urls + visited_urls
+            
+        except Exception as e:
+            print(f"ERROR in _sort_urls_by_visited_status: {e}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
+            raise
 
     def _show_context_menu(self, position):
         """Show context menu at the given position."""
