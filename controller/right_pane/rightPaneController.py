@@ -66,10 +66,29 @@ class RightPaneController():
     
     def setFilterUserSpecific(self, service, service_id):
         """Set filter to show URLs for specific user."""
-        self.current_filter_type = 'user_specific'
-        self.current_filter_params = {'service': service, 'service_id': service_id}
-        urls = self.url_database_controller.getUrlsForUser(service, service_id)
-        self.url_list_widget.update(urls)
+        print(f"=== setFilterUserSpecific called ===")
+        print(f"Service: '{service}' (type: {type(service)})")
+        print(f"Service ID: '{service_id}' (type: {type(service_id)})")
+        
+        try:
+            self.current_filter_type = 'user_specific'
+            self.current_filter_params = {'service': service, 'service_id': service_id}
+            print("Filter parameters set")
+            
+            print("Getting URLs from database...")
+            urls = self.url_database_controller.getUrlsForUser(service, service_id)
+            print(f"Retrieved {len(urls)} URLs from database")
+            
+            print("Updating URL list widget...")
+            self.url_list_widget.update(urls)
+            print("=== setFilterUserSpecific completed successfully ===")
+            
+        except Exception as e:
+            print(f"=== ERROR in setFilterUserSpecific: {e} ===")
+            print(f"Exception type: {type(e)}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
+            raise
     
     def setFilterNotVisited(self):
         """Set filter to show all not visited URLs."""

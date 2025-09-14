@@ -151,10 +151,18 @@ class KemonoTrackerApp(QMainWindow):
     def _on_user_double_clicked(self) -> None:
         """Handle double-click on user list to show their URLs."""
         try:
+            print("=== Double-click on user detected ===")
+            self.logger.info("User double-clicked, attempting to show URLs")
             self.left_pane.left_pane_controller.showSelectUsersUrls()
             self.status_bar.showMessage("Loaded URLs for selected user", 2000)
+            print("=== User URLs loaded successfully ===")
         except Exception as e:
-            self.logger.error(f"Error loading user URLs: {e}")
+            error_msg = f"Error loading user URLs: {e}"
+            print(f"=== ERROR: {error_msg} ===")
+            print(f"Exception type: {type(e)}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
+            self.logger.error(error_msg)
             self._show_error("Error", f"Failed to load user URLs: {e}")
 
 
