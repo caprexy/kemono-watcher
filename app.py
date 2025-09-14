@@ -38,16 +38,28 @@ class KemonoTrackerApp(QMainWindow):
 
     def _setup_logging(self) -> None:
         """Configure application logging."""
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler('kemono_tracker.log'),
-                logging.StreamHandler()
-            ]
-        )
-        self.logger = logging.getLogger(__name__)
-        self.logger.info("Application starting...")
+        try:
+            # Try to create file handler, fall back to console only if it fails
+            handlers = [logging.StreamHandler()]
+            try:
+                handlers.append(logging.FileHandler('kemono_tracker.log'))
+            except (OSError, PermissionError):
+                # If we can't create log file, just use console
+                pass
+            
+            logging.basicConfig(
+                level=logging.INFO,
+                format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                handlers=handlers,
+                force=True  # Override any existing configuration
+            )
+            self.logger = logging.getLogger(__name__)
+            self.logger.info("Application starting...")
+        except Exception as e:
+            # If logging setup fails completely, create a minimal logger
+            self.logger = logging.getLogger(__name__)
+            print(f"Logging setup failed: {e}")
+            print("Application starting...")
 
     def _init_ui(self) -> None:
         """Initialize the user interface components."""
@@ -82,9 +94,13 @@ class KemonoTrackerApp(QMainWindow):
             self.setGeometry(100, 100, 800, 600)  # Default size and position
             
             # Set application icon if available
-            icon_path = Path('assets/icon.png')
-            if icon_path.exists():
-                self.setWindowIcon(QIcon(str(icon_path)))
+            try:
+                icon_path = Path('assets/icon.png')
+                if icon_path.exists():
+                    self.setWindowIcon(QIcon(str(icon_path)))
+            except Exception as e:
+                # Icon loading failed, continue without icon
+                self.logger.warning(f"Failed to load application icon: {e}")
                 
         except Exception as e:
             self.logger.error(f"Failed to initialize UI: {e}")
@@ -205,9 +221,19 @@ def main() -> int:
         return app.exec()
         
     except Exception as e:
-        logging.error(f"Fatal error: {e}")
-        if 'app' in locals():
-            QMessageBox.critical(None, "Fatal Error", f"Application failed to start: {e}")
+        error_msg = f"Fatal error: {e}"
+        print(error_msg)  # Always print to console
+        try:
+            logging.error(error_msg)
+        except:
+            pass  # Ignore logging errors
+        
+        try:
+            if 'app' in locals():
+                QMessageBox.critical(None, "Fatal Error", f"Application failed to start: {e}")
+        except:
+            pass  # Ignore message box errors
+        
         return 1
 
 

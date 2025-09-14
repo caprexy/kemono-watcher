@@ -20,10 +20,14 @@ class UserDatabaseController:
         self.createTable()
     
     def connect(self):
-        if not self.connection:
-            self.connection = sqlite3.connect(userDatabaseConstants.userDatabaseName)
-        if not self.cursor:
-            self.cursor = self.connection.cursor()
+        try:
+            if not self.connection:
+                self.connection = sqlite3.connect(userDatabaseConstants.userDatabaseName)
+            if not self.cursor:
+                self.cursor = self.connection.cursor()
+        except Exception as e:
+            print(f"Failed to connect to user database: {e}")
+            raise
 
     def createTable(self):
         # Create a 'users' table if it doesn't exist

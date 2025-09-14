@@ -24,10 +24,14 @@ class UrlDatabaseController:
         self.createTable()
     
     def connect(self):
-        if not getattr(self.thread_data, 'connection', None):
-            self.thread_data.connection = sqlite3.connect(urlDatabaseConstants.urlDatabaseName)
-        if not getattr(self.thread_data, 'cursor', None):
-            self.thread_data.cursor = self.thread_data.connection.cursor()
+        try:
+            if not getattr(self.thread_data, 'connection', None):
+                self.thread_data.connection = sqlite3.connect(urlDatabaseConstants.urlDatabaseName)
+            if not getattr(self.thread_data, 'cursor', None):
+                self.thread_data.cursor = self.thread_data.connection.cursor()
+        except Exception as e:
+            print(f"Failed to connect to URL database: {e}")
+            raise
     
     def get_connection_n_cursor(self):
         self.connect()
