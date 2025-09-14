@@ -149,7 +149,7 @@ class UrlDatabaseController:
 def postUrlDecrypter(url):
     parts = url.split("/")
     
-    if len(parts) == 8 and parts[2] == "kemono.su" and parts[4] == "user":
+    if len(parts) == 8 and parts[2] == "kemono.cr" and parts[4] == "user":
         service = parts[3]
         service_id = parts[5]
         post_id = parts[7]

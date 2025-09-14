@@ -45,17 +45,21 @@ class WorkerThread(QThread):
         step_size = 50
         res_list = [1]
         while res_list != []:
-            request = "https://kemono.su/api/v1/" + self.service + \
-                        "/user/" + str(self.service_id) + "?o="
+
+            url = f"https://kemono.cr/api/v1/{self.service}/user/{self.service_id}/posts?o="
+            headers = {
+                "Accept": "text/css",
+                "User-Agent": "Mozilla/5.0"  # mimic a browser
+            }
             step += step_size
             if (not self.full_url_check) and (step > step_size * 4):
                 break
             
             try: 
-                response = requests.get(request+str(step))
+                response = requests.get(url+str(step), headers=headers)
                 while response.status_code != 200:
                     time.sleep(1)
-                    response = requests.get(request+str(step))
+                    response = requests.get(url+str(step))
             except requests.exceptions.ConnectionError as e:
                 print("Connection error:", e)
             except requests.exceptions.Timeout as e:
@@ -66,7 +70,10 @@ class WorkerThread(QThread):
             total_urls = 0
             new_urls = 0
             if response.status_code == 200:
+                print(response)
+                print(response.text)
                 res_list = response.json()
+                print(res_list)
                 for result in res_list:
                     post_id = result["id"]
                     resUrl = postUrlMaker(self.service, self.service_id, post_id)
@@ -89,12 +96,12 @@ class WorkerThread(QThread):
         self.finished.emit()
 
 def postUrlMaker(service, service_id, post_id):
-    return f"https://kemono.su/{service}/user/{service_id}/post/{post_id}"
+    return f"https://kemono.cr/{service}/user/{service_id}/post/{post_id}"
 
 def postUrlDecrypter(url):
     parts = url.split("/")
     
-    if len(parts) == 8 and parts[2] == "kemono.su" and parts[4] == "user":
+    if len(parts) == 8 and parts[2] == "kemono.cr" and parts[4] == "user":
         service = parts[3]
         service_id = parts[5]
         post_id = parts[7]
