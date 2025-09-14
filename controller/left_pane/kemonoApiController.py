@@ -70,10 +70,7 @@ class WorkerThread(QThread):
             total_urls = 0
             new_urls = 0
             if response.status_code == 200:
-                print(response)
-                print(response.text)
                 res_list = response.json()
-                print(res_list)
                 for result in res_list:
                     post_id = result["id"]
                     resUrl = postUrlMaker(self.service, self.service_id, post_id)
