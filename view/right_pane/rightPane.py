@@ -26,6 +26,33 @@ class RightPane(QWidget):
         # Connect URL flip signal to refresh current filter and user list
         self.url_list.urlsFlipped.connect(self.right_pane_controller._refresh_after_url_change)
         
+        # Flip URL status button - prominent at the top
+        flip_urls_button = QPushButton('Flip URL Visit Status', self)
+        flip_urls_button.clicked.connect(self.right_pane_controller.flipUrl)
+        
+        # Style the flip button - larger and orange
+        flip_urls_button.setStyleSheet("""
+            QPushButton {
+                background-color: #FF8C00;
+                color: white;
+                font-weight: bold;
+                font-size: 14px;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+                min-height: 30px;
+            }
+            QPushButton:hover {
+                background-color: #FF7F00;
+            }
+            QPushButton:pressed {
+                background-color: #E67E00;
+            }
+        """)
+        
+        main_layout.addWidget(flip_urls_button)
+        
+        # URL management buttons
         url_buttons_layout = QHBoxLayout()
         add_url_button = QPushButton('Add url', self)
         url_buttons_layout.addWidget(add_url_button)
@@ -37,13 +64,10 @@ class RightPane(QWidget):
         
         main_layout.addLayout(url_buttons_layout)
         
-        visit_url_buttons = QHBoxLayout()
+        # Other action buttons
+        action_buttons_layout = QHBoxLayout()
         open_urls_button = QPushButton('Open urls', self)
-        visit_url_buttons.addWidget(open_urls_button)
+        action_buttons_layout.addWidget(open_urls_button)
         open_urls_button.clicked.connect(self.right_pane_controller.openUrls)
         
-        visit_urls_button = QPushButton('Flip url visit status', self)
-        visit_url_buttons.addWidget(visit_urls_button)
-        visit_urls_button.clicked.connect(self.right_pane_controller.flipUrl)
-        
-        main_layout.addLayout(visit_url_buttons)
+        main_layout.addLayout(action_buttons_layout)
