@@ -93,16 +93,22 @@ class WorkerThread(QThread):
         self.finished.emit()
 
 def postUrlMaker(service, service_id, post_id):
+    """Create a kemono URL from service, service_id, and post_id. Handles dashes in all components."""
     return f"https://kemono.cr/{service}/user/{service_id}/post/{post_id}"
 
 def postUrlDecrypter(url):
-    parts = url.split("/")
-    
-    if len(parts) == 8 and parts[2] == "kemono.cr" and parts[4] == "user":
-        service = parts[3]
-        service_id = parts[5]
-        post_id = parts[7]
-        return service, service_id, post_id
-    else:
-        # Return None or raise an exception for invalid URLs
+    """Extract service, service_id, and post_id from a kemono URL. Handles dashes in all components."""
+    try:
+        parts = url.split("/")
+        
+        if len(parts) >= 8 and parts[2] == "kemono.cr" and parts[4] == "user" and parts[6] == "post":
+            service = parts[3]
+            service_id = parts[5]
+            post_id = parts[7]
+            return service, service_id, post_id
+        else:
+            print(f"Invalid URL format: {url}")
+            return None
+    except Exception as e:
+        print(f"Error parsing URL {url}: {e}")
         return None
