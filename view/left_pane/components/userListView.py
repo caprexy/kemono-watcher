@@ -30,14 +30,15 @@ class UserList(QTableWidget):
         self.customContextMenuRequested.connect(self._show_context_menu)
 
     def update(self, users:[User]):
-        if not users: return
+        if not users: 
+            return
         
         self.setRowCount(0)
         self.setRowCount(len(users))
         
         for row, user in enumerate(users):
             for col, val in enumerate(user.values_to_display()):
-                table_item =  QTableWidgetItem(str(val))
+                table_item = QTableWidgetItem(str(val))
                 self.setItem(row, col, table_item)
 
     def _show_context_menu(self, position):

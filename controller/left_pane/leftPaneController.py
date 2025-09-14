@@ -167,8 +167,13 @@ class LeftPaneController():
         
         
     def updateUserList(self):
-        users = self.user_database_controller.getAllUsers()
-        self.user_list.update(users)
+        try:
+            users = self.user_database_controller.getAllUsers()
+            self.user_list.update(users)
+        except Exception as e:
+            print(f"Error updating user list: {e}")
+            # Try to show empty list instead of crashing
+            self.user_list.update([])
     
     def getOneSelectedUser(self):
         if self.user_list.selectedRanges() == []: return []
@@ -185,9 +190,10 @@ class LeftPaneController():
             return None
         
         selected_user = User(
-            row_items[userValueIndexes.Unique_id.value],
-            row_items[userValueIndexes.Username.value],
-            row_items[userValueIndexes.Service.value],
-            row_items[userValueIndexes.Service_id.value],
+            id=int(row_items[userValueIndexes.Unique_id.value]),
+            username=row_items[userValueIndexes.Username.value],
+            service=row_items[userValueIndexes.Service.value],
+            service_id=row_items[userValueIndexes.Service_id.value],
+            unvisited_count=int(row_items[userValueIndexes.Unvisited_count.value]) if len(row_items) > userValueIndexes.Unvisited_count.value else 0
         )
         return selected_user

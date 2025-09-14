@@ -54,6 +54,10 @@ class RightPaneController():
             self.url_database_controller.flipUrl(url)
         self._refresh_current_filter()
         
+        # Refresh user list to update unvisited counts
+        if hasattr(self, 'left_pane_controller') and self.left_pane_controller:
+            self.left_pane_controller.updateUserList()
+        
     def updateUrlList(self):
         """Update URL list maintaining current filter."""
         self._refresh_current_filter()
@@ -119,6 +123,14 @@ class RightPaneController():
         else:
             # Default to all URLs if no filter is set
             self.url_list_widget.update()
+
+    def _refresh_after_url_change(self):
+        """Refresh both the current filter and user list after URL changes."""
+        self._refresh_current_filter()
+        
+        # Refresh user list to update unvisited counts
+        if hasattr(self, 'left_pane_controller') and self.left_pane_controller:
+            self.left_pane_controller.updateUserList()
     
     def getSelectedUrls(self, one_only=False)->list[Url]:
         selected_items = self.url_list_widget.selectedItems()

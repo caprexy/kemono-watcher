@@ -23,8 +23,8 @@ class RightPane(QWidget):
         # Connect unvisited URLs signal to show user's unvisited URLs
         self.url_list.userUnvisitedUrlsRequested.connect(self.right_pane_controller.showUserUnvisitedUrls)
         
-        # Connect URL flip signal to refresh current filter
-        self.url_list.urlsFlipped.connect(self.right_pane_controller._refresh_current_filter)
+        # Connect URL flip signal to refresh current filter and user list
+        self.url_list.urlsFlipped.connect(self.right_pane_controller._refresh_after_url_change)
         
         url_buttons_layout = QHBoxLayout()
         add_url_button = QPushButton('Add url', self)

@@ -125,6 +125,9 @@ class KemonoTrackerApp(QMainWindow):
         # Set the right pane controller in the left pane controller for filter management
         self.left_pane.left_pane_controller.right_pane_controller = self.right_pane.right_pane_controller
         
+        # Set the left pane controller in the right pane controller for user list updates
+        self.right_pane.right_pane_controller.left_pane_controller = self.left_pane.left_pane_controller
+        
         # Connect double-click signal from user list to show URLs
         self.left_pane.user_list.itemDoubleClicked.connect(self._on_user_double_clicked)
 

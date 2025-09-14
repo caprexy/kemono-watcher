@@ -79,20 +79,62 @@ class UserDatabaseController:
             print(f"Error deleting user: {e}")
 
     def getAllUsers(self):
-        # Retrieve all users from the 'users' table
+        # Retrieve all users from the 'users' table with unvisited URL counts
         self.connect()
+        
+        # First, get users with simple query (always works with existing databases)
         self.cursor.execute(f'SELECT * FROM {userDatabaseConstants.user_table_name}')
-        res = self.cursor.fetchall()
+        user_res = self.cursor.fetchall()
+        
         users = []
-        for user in res:
-            users.append(
-                User(
-                    user[0],
-                    user[1],
-                    user[2],
-                    user[3]
-                )
+        for user_row in user_res:
+            # Try to get unvisited count for this user
+            unvisited_count = 0
+            try:
+                # Import URL database constants for the count query
+                from controller.database import urlDatabaseConstants
+                
+                # Use URL database controller to get the count (it has the right connection)
+                from controller.database.urlDatabaseController import UrlDatabaseController
+                url_db_controller = UrlDatabaseController()
+                
+                # Get connection to URL database
+                url_connection, url_cursor = url_db_controller.get_connection_n_cursor()
+                
+                # Check if URL table exists in the URL database
+                url_cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (urlDatabaseConstants.url_table_name,))
+                table_exists = url_cursor.fetchone()
+                
+                if table_exists:
+                    # Count unvisited URLs for this specific user using URL database connection
+                    count_query = f"""
+                    SELECT COUNT(*) FROM {urlDatabaseConstants.url_table_name} 
+                    WHERE {urlDatabaseConstants.service} = ? 
+                    AND {urlDatabaseConstants.service_id} = ? 
+                    AND ({urlDatabaseConstants.visited} = 0 OR {urlDatabaseConstants.visited} = 'false' OR {urlDatabaseConstants.visited} = 'False')
+                    """
+                    
+                    service = user_row[2]
+                    service_id = str(user_row[3])
+                    
+                    url_cursor.execute(count_query, (service, service_id))
+                    count_result = url_cursor.fetchone()
+                    unvisited_count = count_result[0] if count_result else 0
+                    
+            except Exception:
+                # If URL counting fails, just use 0 (backward compatibility)
+                unvisited_count = 0
+            
+            # Create user object with count
+            user_obj = User(
+                id=user_row[0],
+                username=user_row[1],
+                service=user_row[2],
+                service_id=user_row[3],
+                unvisited_count=unvisited_count
             )
+            users.append(user_obj)
+        
         return users
     
     def doesServiceIdExist(self, service:str, service_id:int):
